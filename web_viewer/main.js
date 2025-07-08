@@ -116,11 +116,21 @@ class KnowledgeGraphApp {
             onNodeClick: (node) => this.handleNodeClick(node),
             onNodeHover: (node, event) => this.handleNodeHover(node, event),
             onNodeLeave: () => this.handleNodeLeave(),
+            onEdgeHover: (edge, event) => this.handleEdgeHover(edge, event),
+            onEdgeLeave: () => this.handleEdgeLeave(),
             entityTypeColorMap: this.entityTypeColorMap
         });
 
         // Handle window resize
         window.addEventListener('resize', () => this.handleResize());
+    }
+
+    handleEdgeHover(edge, event) {
+        this.showTooltip(edge, event, true);
+    }
+
+    handleEdgeLeave() {
+        this.hideTooltip();
     }
 
     async centerOnEntity(entityName) {
@@ -323,15 +333,23 @@ class KnowledgeGraphApp {
         const title = document.getElementById('tooltip-title');
         const type = document.getElementById('tooltip-type');
         const description = document.getElementById('tooltip-description');
-        
-        title.textContent = node.name;
-        type.textContent = node.entityType;
-        description.textContent = node.observations[0] || 'No description available';
-        
+
+        // If third argument is true, treat as edge/relation
+        if (arguments[2]) {
+            // edge: { source, target, relationType }
+            title.textContent = `${node.relationType}`;
+            type.textContent = `Relation`;
+            description.textContent = `From: ${node.source.id || node.source} → To: ${node.target.id || node.target}`;
+        } else {
+            title.textContent = node.name;
+            type.textContent = node.entityType;
+            description.textContent = node.observations[0] || 'No description available';
+        }
+
         // Position tooltip
         tooltip.style.left = `${event.pageX + 10}px`;
         tooltip.style.top = `${event.pageY - 10}px`;
-        
+
         tooltip.classList.remove('hidden');
     }
 

@@ -151,16 +151,18 @@ export class KnowledgeGraph {
             .attr('stroke', '#64748b')
             .attr('stroke-width', 2)
             .attr('stroke-opacity', 0.6)
-            .attr('marker-end', 'url(#arrow)');
-        
-        // Add link label
-        linkEnter.append('text')
-            .attr('class', 'link-label')
-            .attr('text-anchor', 'middle')
-            .attr('font-size', '10px')
-            .attr('fill', '#64748b')
-            .attr('dy', -5)
-            .text(d => d.relationType);
+            .attr('marker-end', 'url(#arrow)')
+            .on('mouseover', (event, d) => {
+                if (this.options.onEdgeHover) {
+                    // Pass relation data and event to main app
+                    this.options.onEdgeHover(d, event);
+                }
+            })
+            .on('mouseout', (event, d) => {
+                if (this.options.onEdgeLeave) {
+                    this.options.onEdgeLeave(d, event);
+                }
+            });
         
         // Update all links
         this.linkElements = linkEnter.merge(link);
