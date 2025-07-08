@@ -9,6 +9,7 @@ import { MCPDataProvider } from './mcp-data.js';
 import { renderEntityTypeFilter } from './filter.js';
 import { COLOR_PALETTE, getEntityTypeColorMap } from './colorPalette.js';
 import { renderLegend } from './legend.js';
+import { renderInfoPanel } from './infoPanel.js';
 
 class KnowledgeGraphApp {
     constructor() {
@@ -86,6 +87,11 @@ class KnowledgeGraphApp {
             renderLegend(this.entityTypes, this.entityTypeColorMap);
             this.updateStats();
             this.hideLoading();
+            // Show info panel for the center node after data is loaded
+            const centerEntityObj = this.currentData.entities.find(e => e.name === this.currentCenter);
+            if (centerEntityObj) {
+                renderInfoPanel(centerEntityObj, this.getEntityTypeClass.bind(this), this.getEntityConnectionsWithClickHandler.bind(this));
+            }
             console.log(`✅ Loaded ${this.currentData.entities.length} entities and ${this.currentData.relations.length} relations`);
         } catch (error) {
             console.error('❌ Failed to load data:', error);
@@ -192,12 +198,10 @@ class KnowledgeGraphApp {
 
     handleNodeClick(node) {
         console.log(`👆 Node clicked: ${node.name}`);
-        
-        // Center graph on clicked node
-        this.centerOnEntity(node.name);
-        
-        // Show entity details
-        this.showEntityDetails(node);
+        // Center graph on clicked node, but do not show info panel here (will show below)
+        this.centerOnEntity(node.name, false);
+        // Show entity details for the clicked node
+        renderInfoPanel(node, this.getEntityTypeClass.bind(this), this.getEntityConnectionsWithClickHandler.bind(this));
     }
 
     handleNodeHover(node, event) {
@@ -286,54 +290,21 @@ class KnowledgeGraphApp {
         }
     }
 
-    showEntityDetails(entity) {
-        const panel = document.getElementById('info-panel');
-        const entityName = document.getElementById('entity-name');
-        const entityType = document.getElementById('entity-type');
-        const observationsList = document.getElementById('observations-list');
-        const connectionsList = document.getElementById('connections-list');
-        
-        // Set entity name and type
-        entityName.textContent = entity.name;
-        entityType.textContent = entity.entityType;
-        entityType.className = `entity-type ${this.getEntityTypeClass(entity.entityType)}`;
-        
-        // Show observations
-        observationsList.innerHTML = '';
-        entity.observations.forEach(obs => {
-            const li = document.createElement('li');
-            li.textContent = obs;
-            observationsList.appendChild(li);
-        });
-        
-        // Show connections
-        const connections = this.getEntityConnections(entity.name);
-        connectionsList.innerHTML = '';
-        connections.forEach(conn => {
-            const div = document.createElement('div');
-            div.className = 'connection-item';
-            div.innerHTML = `
-                <span class="connection-type">${conn.relationType}</span>
-                <span class="connection-target">${conn.target}</span>
-            `;
-            div.addEventListener('click', () => this.centerOnEntity(conn.target));
-            connectionsList.appendChild(div);
-        });
-        
-        // Show panel
-        panel.classList.remove('hidden');
-    }
-
-    getEntityConnections(entityName) {
+    getEntityConnectionsWithClickHandler(entityName) {
         if (!this.currentData) return [];
-        
         return this.currentData.relations
             .filter(rel => rel.from === entityName || rel.to === entityName)
             .map(rel => ({
                 relationType: rel.relationType,
                 target: rel.from === entityName ? rel.to : rel.from,
-                direction: rel.from === entityName ? 'outgoing' : 'incoming'
+                direction: rel.from === entityName ? 'outgoing' : 'incoming',
+                onClick: (target) => this.centerOnEntity(target)
             }));
+    }
+
+    getEntityTypeClass(entityType) {
+        // Convert entity type to CSS class
+        return entityType.toLowerCase().replace(/\s+/g, '-');
     }
 
     // hideInfoPanel removed: info panel is always visible
