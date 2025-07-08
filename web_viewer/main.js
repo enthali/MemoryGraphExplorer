@@ -1,4 +1,3 @@
-
 // Legend rendering moved to legend.js
 /**
  * Knowledge Graph Interactive Viewer - Main Application
@@ -254,9 +253,6 @@ class KnowledgeGraphApp {
         
         // Center on default entity
         this.centerOnEntity('Georg Doll');
-        
-        // Hide info panel
-        this.hideInfoPanel();
     }
 
     handleKeyboard(event) {
