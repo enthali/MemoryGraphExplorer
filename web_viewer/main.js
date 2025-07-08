@@ -5,6 +5,7 @@
 
 import { KnowledgeGraph } from './graph.js';
 import { MCPDataProvider } from './mcp-data.js';
+import { renderEntityTypeFilter } from './filter.js';
 
 class KnowledgeGraphApp {
     constructor() {
@@ -12,7 +13,7 @@ class KnowledgeGraphApp {
         this.graph = null;
         this.currentData = null;
         this.currentCenter = 'Georg Doll'; // Default center entity
-        
+        this.entityTypes = [];
         this.init();
     }
 
@@ -70,9 +71,15 @@ class KnowledgeGraphApp {
     async loadData() {
         console.log('📊 Loading knowledge graph data...');
         this.showLoading();
-        
         try {
             this.currentData = await this.dataProvider.getFullGraph();
+            // Extract unique entity types
+            this.entityTypes = [...new Set(this.currentData.entities.map(e => e.entityType))].sort();
+            // Render dynamic filter UI
+            renderEntityTypeFilter(this.entityTypes, () => {
+                this.updateFilterDisplay();
+                this.applyMultiSelectFilter();
+            });
             this.updateStats();
             this.hideLoading();
             console.log(`✅ Loaded ${this.currentData.entities.length} entities and ${this.currentData.relations.length} relations`);
@@ -409,43 +416,35 @@ class KnowledgeGraphApp {
         const filterBtn = document.getElementById('filter-btn');
         const filterDropdown = document.getElementById('filter-dropdown');
         const clearFiltersBtn = document.getElementById('clear-filters');
-        const checkboxes = filterDropdown.querySelectorAll('input[type="checkbox"]');
-        
+
         // Toggle dropdown visibility
         filterBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             filterDropdown.classList.toggle('hidden');
         });
-        
+
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!filterBtn.contains(e.target) && !filterDropdown.contains(e.target)) {
                 filterDropdown.classList.add('hidden');
             }
         });
-        
-        // Handle checkbox changes
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', () => {
-                this.updateFilterDisplay();
-                this.applyMultiSelectFilter();
-            });
-        });
-        
+
         // Clear all filters
         clearFiltersBtn.addEventListener('click', () => {
+            const checkboxes = filterDropdown.querySelectorAll('input[type="checkbox"]');
             checkboxes.forEach(checkbox => {
                 checkbox.checked = false;
             });
             this.updateFilterDisplay();
             this.applyMultiSelectFilter();
         });
-        
+
         // Prevent dropdown from closing when clicking inside
         filterDropdown.addEventListener('click', (e) => {
             e.stopPropagation();
         });
-        
+
         // Initialize filter display
         this.updateFilterDisplay();
     }
