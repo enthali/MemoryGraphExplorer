@@ -25,7 +25,7 @@ start-mcp-web-viewer.bat
 
 **Access Points:**
 - **Web Interface:** http://localhost:8080
-- **MCP API:** http://localhost:8081/api
+- **MCP API:** http://localhost:8080/api
 
 ## Interactive Web Viewer
 
@@ -115,41 +115,22 @@ print(format_mcp_search_results(results, "Microsoft"))
 ```python
 # Get connections for a specific person
 graph_data = mcp_memory_read_graph()
-connections = get_entity_connections(graph_data, "Robert Lockner")
-print(format_entity_connections(connections, "Robert Lockner"))
+connections = get_entity_connections(graph_data, "Your Name")
+print(format_entity_connections(connections, "Your Name"))
 ```
 
-### 4. Generate Mermaid Diagram (Python)
-
-```python
-# Create a visual diagram focused on an entity
-graph_data = mcp_memory_read_graph()
-mermaid = generate_mermaid_diagram(graph_data, "Georg Doll")
-print(f"```mermaid\n{mermaid}\n```")
-```
-
-### 5. API Access (HTTP)
+### 4. API Access (HTTP)
 
 ```bash
 # Get full graph data
-curl http://localhost:8081/api/graph
+curl http://localhost:8080/api/graph
 
 # Search for entities
-curl "http://localhost:8081/api/search?q=automotive"
+curl "http://localhost:8080/api/search?q=automotive"
 
 # Get specific entity
-curl "http://localhost:8081/api/entity?name=Georg%20Doll"
+curl "http://localhost:8080/api/entity?name=Your%20Name"
 ```
-
-## Current Data
-
-Your knowledge graph currently contains:
-
-- **20 Professional Entities** - Contacts, projects, events, and organizations
-- **28 Business Relations** - Meetings, collaborations, and project connections
-- **Real Network Data** - Your actual professional connections and activities
-
-Key entities include Microsoft colleagues, automotive industry contacts, customer relationships, and project collaborations.
 
 ## Benefits
 
