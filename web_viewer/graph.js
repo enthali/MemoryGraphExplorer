@@ -188,14 +188,7 @@ export class KnowledgeGraph {
             .attr('stroke-width', d => d.isCenter ? 4 : 2)
             .attr('stroke-opacity', 0.8);
         
-        // Add node icon/symbol based on entity type
-        nodeEnter.append('text')
-            .attr('class', 'node-icon')
-            .attr('text-anchor', 'middle')
-            .attr('dy', '0.35em')
-            .attr('font-size', d => this.getNodeRadius(d) * 0.8)
-            .attr('fill', '#ffffff')
-            .text(d => this.getNodeIcon(d.entityType));
+        // Node icons removed for dynamic entity types
         
         // Add hover effects
         nodeEnter
@@ -308,19 +301,7 @@ export class KnowledgeGraph {
         return colorMap[node.entityType] || '#64748b';
     }
 
-    getNodeIcon(entityType) {
-        const iconMap = {
-            'Microsoft Team Member': '👤',
-            'Professional Contact': '🤝',
-            'Customer': '🏭',
-            'Microsoft Project': '📋',
-            'Industry Event': '🏢',
-            'Partnership Project': '🤝',
-            'External Partner': '🔗'
-        };
-        
-        return iconMap[entityType] || '•';
-    }
+    // getNodeIcon removed: icons are no longer used for dynamic entity types
 
     getLabelText(node) {
         // Truncate long names
