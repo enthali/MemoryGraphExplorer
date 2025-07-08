@@ -1,19 +1,5 @@
 
-// Renders the dynamic legend for entity types and colors
-function renderLegend(entityTypes, colorMap) {
-    const legendContainer = document.getElementById('legend');
-    legendContainer.innerHTML = '';
-    entityTypes.forEach(type => {
-        const color = colorMap && colorMap[type] ? colorMap[type] : '#888';
-        const item = document.createElement('div');
-        item.className = 'legend-item';
-        item.innerHTML = `
-            <span class="legend-color" style="background:${color};display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
-            <span>${type}</span>
-        `;
-        legendContainer.appendChild(item);
-    });
-}
+// Legend rendering moved to legend.js
 /**
  * Knowledge Graph Interactive Viewer - Main Application
  * Entry point for the web-based knowledge graph visualization
@@ -23,6 +9,7 @@ import { KnowledgeGraph } from './graph.js';
 import { MCPDataProvider } from './mcp-data.js';
 import { renderEntityTypeFilter } from './filter.js';
 import { COLOR_PALETTE, getEntityTypeColorMap } from './colorPalette.js';
+import { renderLegend } from './legend.js';
 
 class KnowledgeGraphApp {
     constructor() {
