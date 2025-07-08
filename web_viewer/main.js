@@ -76,6 +76,10 @@ class KnowledgeGraphApp {
             this.currentData = await this.dataProvider.getFullGraph();
             // Extract unique entity types
             this.entityTypes = [...new Set(this.currentData.entities.map(e => e.entityType))].sort();
+            // Set initial center to first entity if available
+            if (this.currentData.entities.length > 0) {
+                this.currentCenter = this.currentData.entities[0].name;
+            }
             // Generate color map for entity types
             this.entityTypeColorMap = getEntityTypeColorMap(this.entityTypes);
             // Render dynamic filter UI with color
@@ -256,7 +260,12 @@ class KnowledgeGraphApp {
         }
         
         // Center on default entity
-        this.centerOnEntity('Georg Doll');
+        // this.centerOnEntity('Georg Doll');
+        // Center on first entity in the current data
+        if (this.currentData && this.currentData.entities.length > 0) {
+            this.currentCenter = this.currentData.entities[0].name;
+            this.centerOnEntity(this.currentCenter);
+        }
     }
 
     handleKeyboard(event) {
