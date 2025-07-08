@@ -64,9 +64,6 @@ class KnowledgeGraphApp {
         const retryBtn = document.getElementById('retry-btn');
         retryBtn.addEventListener('click', () => this.loadData());
         
-        // Close info panel
-        const closePanel = document.getElementById('close-panel');
-        closePanel.addEventListener('click', () => this.hideInfoPanel());
         
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
@@ -343,9 +340,7 @@ class KnowledgeGraphApp {
             }));
     }
 
-    hideInfoPanel() {
-        document.getElementById('info-panel').classList.add('hidden');
-    }
+    // hideInfoPanel removed: info panel is always visible
 
     showTooltip(node, event) {
         const tooltip = document.getElementById('tooltip');
