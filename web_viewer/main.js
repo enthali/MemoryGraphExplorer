@@ -1,3 +1,19 @@
+
+// Renders the dynamic legend for entity types and colors
+function renderLegend(entityTypes, colorMap) {
+    const legendContainer = document.getElementById('legend');
+    legendContainer.innerHTML = '';
+    entityTypes.forEach(type => {
+        const color = colorMap && colorMap[type] ? colorMap[type] : '#888';
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.innerHTML = `
+            <span class="legend-color" style="background:${color};display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
+            <span>${type}</span>
+        `;
+        legendContainer.appendChild(item);
+    });
+}
 /**
  * Knowledge Graph Interactive Viewer - Main Application
  * Entry point for the web-based knowledge graph visualization
@@ -83,6 +99,8 @@ class KnowledgeGraphApp {
                 this.updateFilterDisplay();
                 this.applyMultiSelectFilter();
             }, this.entityTypeColorMap);
+            // Render dynamic legend
+            renderLegend(this.entityTypes, this.entityTypeColorMap);
             this.updateStats();
             this.hideLoading();
             console.log(`✅ Loaded ${this.currentData.entities.length} entities and ${this.currentData.relations.length} relations`);
@@ -104,7 +122,8 @@ class KnowledgeGraphApp {
             height: this.getGraphContainerHeight(),
             onNodeClick: (node) => this.handleNodeClick(node),
             onNodeHover: (node, event) => this.handleNodeHover(node, event),
-            onNodeLeave: () => this.handleNodeLeave()
+            onNodeLeave: () => this.handleNodeLeave(),
+            entityTypeColorMap: this.entityTypeColorMap
         });
 
         // Handle window resize
@@ -121,7 +140,7 @@ class KnowledgeGraphApp {
             const networkData = this.getNetworkAroundEntity(entityName, 2);
             
             // Update graph with filtered data
-            this.graph.updateData(networkData, entityName);
+            this.graph.updateData(networkData, entityName, this.entityTypeColorMap);
             
             // Update current center
             this.currentCenter = entityName;

@@ -12,15 +12,16 @@ export class KnowledgeGraph {
             onNodeClick: options.onNodeClick || (() => {}),
             onNodeHover: options.onNodeHover || (() => {}),
             onNodeLeave: options.onNodeLeave || (() => {}),
+            entityTypeColorMap: options.entityTypeColorMap || {},
             ...options
         };
-        
+
         this.svg = null;
         this.simulation = null;
         this.nodes = [];
         this.links = [];
         this.centerEntity = null;
-        
+
         this.initializeSVG();
         this.setupForceSimulation();
     }
@@ -79,10 +80,13 @@ export class KnowledgeGraph {
             .on('tick', () => this.tick());
     }
 
-    updateData(data, centerEntity = null) {
+    updateData(data, centerEntity = null, entityTypeColorMap = null) {
         console.log('📊 Updating graph with new data:', data);
         
         this.centerEntity = centerEntity;
+        if (entityTypeColorMap) {
+            this.options.entityTypeColorMap = entityTypeColorMap;
+        }
         
         // Process nodes
         this.nodes = data.entities.map(entity => ({
@@ -300,16 +304,7 @@ export class KnowledgeGraph {
     }
 
     getNodeColor(node) {
-        const colorMap = {
-            'Microsoft Team Member': '#2563eb',
-            'Professional Contact': '#10b981',
-            'Customer': '#f59e0b',
-            'Microsoft Project': '#8b5cf6',
-            'Industry Event': '#ef4444',
-            'Partnership Project': '#06b6d4',
-            'External Partner': '#84cc16'
-        };
-        
+        const colorMap = this.options.entityTypeColorMap || {};
         return colorMap[node.entityType] || '#64748b';
     }
 
