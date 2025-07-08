@@ -6,6 +6,7 @@
 import { KnowledgeGraph } from './graph.js';
 import { MCPDataProvider } from './mcp-data.js';
 import { renderEntityTypeFilter } from './filter.js';
+import { COLOR_PALETTE, getEntityTypeColorMap } from './colorPalette.js';
 
 class KnowledgeGraphApp {
     constructor() {
@@ -75,11 +76,13 @@ class KnowledgeGraphApp {
             this.currentData = await this.dataProvider.getFullGraph();
             // Extract unique entity types
             this.entityTypes = [...new Set(this.currentData.entities.map(e => e.entityType))].sort();
-            // Render dynamic filter UI
+            // Generate color map for entity types
+            this.entityTypeColorMap = getEntityTypeColorMap(this.entityTypes);
+            // Render dynamic filter UI with color
             renderEntityTypeFilter(this.entityTypes, () => {
                 this.updateFilterDisplay();
                 this.applyMultiSelectFilter();
-            });
+            }, this.entityTypeColorMap);
             this.updateStats();
             this.hideLoading();
             console.log(`✅ Loaded ${this.currentData.entities.length} entities and ${this.currentData.relations.length} relations`);
@@ -373,17 +376,10 @@ class KnowledgeGraphApp {
             `Center: ${centerEntity}`;
     }
 
-    getEntityTypeClass(entityType) {
-        const typeMap = {
-            'Microsoft Team Member': 'team-member',
-            'Professional Contact': 'contact',
-            'Customer': 'customer',
-            'Microsoft Project': 'project',
-            'Industry Event': 'event',
-            'Partnership Project': 'project',
-            'External Partner': 'contact'
-        };
-        return typeMap[entityType] || 'default';
+    getEntityTypeColor(entityType) {
+        return this.entityTypeColorMap && this.entityTypeColorMap[entityType]
+            ? this.entityTypeColorMap[entityType]
+            : '#888'; // fallback color
     }
 
     showLoading() {
