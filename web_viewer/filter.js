@@ -12,8 +12,8 @@ export function renderEntityTypeFilter(entityTypes, onChange, colorMap) {
         const color = colorMap && colorMap[type] ? colorMap[type] : '#888';
         label.innerHTML = `
             <input type="checkbox" value="${type}" checked style="width:16px;height:16px;vertical-align:middle;margin-right:6px;">
-            <span class="color-dot" style="background:${color};display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
             <span class="checkmark"></span>
+            <span class="color-dot" style="background:${color};display:inline-block;width:16px;height:16px;border-radius:50%;margin-right:10px;vertical-align:middle;"></span>
             ${type}
         `;
         const checkbox = label.querySelector('input[type="checkbox"]');

@@ -120,14 +120,15 @@ body {
     position: absolute;
     top: 100%;
     left: 0;
-    right: 0;
     background: var(--surface-color);
     border: 1px solid var(--border-color);
-    border-radius: 0.375rem;
-    box-shadow: var(--shadow-lg);
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
     z-index: 1000;
     margin-top: 0.25rem;
-    max-height: 300px;
+    min-width: 320px;
+    max-width: 400px;
+    max-height: 340px;
     overflow-y: auto;
 }
 
@@ -165,12 +166,14 @@ body {
 .filter-option {
     display: flex;
     align-items: center;
-    padding: 0.5rem 1rem;
+    gap: 8px;
+    padding: 4px 0;
     cursor: pointer;
-    transition: background-color 0.2s;
-    -webkit-user-select: none;
+    font-size: 1rem;
+    position: relative;
     user-select: none;
-    gap: 0.75rem;
+    transition: background 0.2s;
+    border-radius: 0.25rem;
 }
 
 .filter-option:hover {
@@ -178,22 +181,21 @@ body {
 }
 
 .filter-option input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
     cursor: pointer;
-    height: 0;
-    width: 0;
+    flex-shrink: 0;
 }
 
-.checkmark {
-    height: 16px;
+.color-dot {
     width: 16px;
-    background-color: var(--surface-color);
-    border: 2px solid var(--border-color);
-    border-radius: 0.25rem;
-    position: relative;
+    height: 16px;
+    display: inline-block;
+    margin-right: 8px;
+    border-radius: 50%;
+    vertical-align: middle;
     flex-shrink: 0;
-    transition: all 0.2s;
 }
 
 .filter-option input:checked ~ .checkmark {
