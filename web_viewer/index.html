@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Graph Interactive Viewer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <h1>📊 Knowledge Graph Explorer</h1>
+            <div class="controls">
+                <input type="text" id="search" placeholder="🔍 Search entities..." />
+                <div class="multi-select-wrapper">
+                    <button id="filter-btn" class="filter-button">
+                        🏷️ Filter Types <span id="filter-count"></span> ▼
+                    </button>
+                    <div id="filter-dropdown" class="filter-dropdown hidden">
+                        <div class="filter-header">
+                            <span>Select Entity Types</span>
+                            <button id="clear-filters" class="clear-filters">Clear All</button>
+                        </div>
+                        <div class="filter-options">
+                            <label class="filter-option">
+                                <input type="checkbox" value="Microsoft Team Member" checked>
+                                <span class="checkmark"></span>
+                                👤 Team Members
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" value="Professional Contact" checked>
+                                <span class="checkmark"></span>
+                                🤝 Contacts
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" value="Customer" checked>
+                                <span class="checkmark"></span>
+                                🏭 Customers
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" value="Microsoft Project" checked>
+                                <span class="checkmark"></span>
+                                📋 Projects
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" value="Industry Event" checked>
+                                <span class="checkmark"></span>
+                                🏢 Events
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" value="Partnership Project" checked>
+                                <span class="checkmark"></span>
+                                🤝 Partnerships
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" value="External Partner" checked>
+                                <span class="checkmark"></span>
+                                🔗 External Partners
+                            </label>
+                            <label class="filter-option">
+                                <input type="checkbox" value="Customer Project" checked>
+                                <span class="checkmark"></span>
+                                📊 Customer Projects
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <button id="refresh-btn">🔄 Refresh Data</button>
+                <button id="reset-btn">🏠 Reset View</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Graph Container -->
+            <div id="graph-container">
+                <svg id="graph"></svg>
+                
+                <!-- Loading State -->
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading knowledge graph...</p>
+                </div>
+                
+                <!-- Error State -->
+                <div id="error" class="error hidden">
+                    <p>❌ Error loading graph data</p>
+                    <button id="retry-btn">🔄 Retry</button>
+                </div>
+            </div>
+
+            <!-- Information Panel -->
+            <div id="info-panel" class="info-panel hidden">
+                <div class="panel-header">
+                    <h3 id="entity-name">Entity Details</h3>
+                    <button id="close-panel">✕</button>
+                </div>
+                <div class="panel-content">
+                    <div id="entity-type" class="entity-type"></div>
+                    <div id="entity-observations" class="observations">
+                        <h4>📝 Observations</h4>
+                        <ul id="observations-list"></ul>
+                    </div>
+                    <div id="entity-connections" class="connections">
+                        <h4>🔗 Connections</h4>
+                        <div id="connections-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="stats">
+                <span id="entity-count">Entities: 0</span>
+                <span id="relation-count">Relations: 0</span>
+                <span id="current-center">Center: None</span>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color team-member"></div>
+                    <span>Team Members</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color contact"></div>
+                    <span>Contacts</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color customer"></div>
+                    <span>Customers</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color project"></div>
+                    <span>Projects</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color event"></div>
+                    <span>Events</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip hidden">
+        <div class="tooltip-content">
+            <h4 id="tooltip-title"></h4>
+            <p id="tooltip-type"></p>
+            <p id="tooltip-description"></p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

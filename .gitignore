@@ -1,0 +1,38 @@
+# Node modules
+node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vite/Build output
+dist/
+build/
+
+# Logs
+*.log
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+
+# Test screenshots or output
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# Misc
+*.bak
+*.tmp

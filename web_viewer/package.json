@@ -1,0 +1,31 @@
+{
+  "name": "knowledge-graph-web-viewer",
+  "version": "1.0.0",
+  "description": "Interactive web-based knowledge graph visualization using D3.js and MCP Memory Server",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build", 
+    "preview": "vite preview",
+    "mcp-server": "python mcp_data_server.py",
+    "web-only": "python -m http.server 8080",
+    "start": "echo 'Use ../start-mcp-web-viewer.ps1 to start both MCP server and web viewer together'"
+  },
+  "dependencies": {
+    "d3": "^7.8.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.53.2",
+    "playwright": "^1.53.2",
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "knowledge-graph",
+    "visualization",
+    "d3js",
+    "mcp",
+    "interactive"
+  ],
+  "author": "Georg Doll",
+  "license": "MIT"
+}
