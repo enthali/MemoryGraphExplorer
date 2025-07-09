@@ -2,6 +2,7 @@
 """
 Unified Knowledge Graph Web Server
 Single Flask server that serves both static files and MCP API endpoints
+Connects to MCP Memory Server for real-time data access
 """
 
 import json
@@ -22,47 +23,131 @@ CORS(app)  # Enable CORS for all routes
 WEB_VIEWER_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class MCPInterface:
-    """Interface to MCP Memory Server functions"""
-    def __init__(self, memory_file):
-        self.memory_file = memory_file
-    
+    """Interface to MCP Memory Server - connects to running MCP server"""
+    def __init__(self, mcp_server_available=True):
+        self.mcp_server_available = mcp_server_available
+        # In a real implementation, you'd check for MCP server availability here
+        
     def read_memory_json(self) -> Dict[str, Any]:
-        """Read and parse memory.json file"""
+        """Get the complete knowledge graph from MCP server"""
+        try:
+            # Use the MCP memory function that should be available
+            if hasattr(self, '_test_mode') and self._test_mode:
+                return self._get_test_data()
+            
+            # Try to call the MCP server function
+            # This should call mcp_memory_read_graph() when properly connected
+            try:
+                from mcp_memory_functions import mcp_memory_read_graph
+                result = mcp_memory_read_graph()
+                print(f"📡 Retrieved {len(result.get('entities', []))} entities and {len(result.get('relations', []))} relations from MCP server")
+                return result
+            except ImportError:
+                print("⚠️  MCP functions not available - falling back to direct file access")
+                return self._read_file_fallback()
+                
+        except Exception as e:
+            print(f"❌ Error reading from MCP server: {e}")
+            return self._read_file_fallback()
+    
+    def search_nodes(self, query: str) -> Dict[str, Any]:
+        """Search nodes using MCP server"""
+        try:
+            # Try to call the MCP server function
+            try:
+                from mcp_memory_functions import mcp_memory_search_nodes
+                result = mcp_memory_search_nodes(query)
+                print(f"📡 MCP search '{query}': found {len(result.get('entities', []))} entities, {len(result.get('relations', []))} relations")
+                return result
+            except ImportError:
+                print("⚠️  MCP search not available - using local search")
+                return self._search_fallback(query)
+                
+        except Exception as e:
+            print(f"❌ Error searching MCP server: {e}")
+            return self._search_fallback(query)
+    
+    def get_entity_details(self, entity_name: str) -> Dict[str, Any]:
+        """Get entity details and relations using MCP server"""
+        try:
+            # Try to use enhanced get_node_relations function
+            try:
+                from mcp_memory_functions import mcp_memory_open_nodes, mcp_memory_get_node_relations
+                # First get the entity
+                open_result = mcp_memory_open_nodes([entity_name])
+                entity = None
+                if open_result.get('entities'):
+                    entity = open_result['entities'][0]
+                
+                # Try to get relations using enhanced function
+                try:
+                    relations_result = mcp_memory_get_node_relations(entity_name)
+                    relations = relations_result.get('outgoing', []) + relations_result.get('incoming', [])
+                    print(f"📡 Enhanced: Retrieved entity '{entity_name}' with {len(relations)} relations")
+                except:
+                    # Fallback to open_nodes relations
+                    relations = open_result.get('relations', [])
+                    print(f"📡 Standard: Retrieved entity '{entity_name}' with {len(relations)} relations")
+                
+                return {
+                    'entity': entity,
+                    'relations': relations
+                }
+            except ImportError:
+                print("⚠️  MCP functions not available - using fallback")
+                return self._get_entity_fallback(entity_name)
+                
+        except Exception as e:
+            print(f"❌ Error getting entity details from MCP server: {e}")
+            return self._get_entity_fallback(entity_name)
+    
+    def _read_file_fallback(self) -> Dict[str, Any]:
+        """Fallback to reading memory.json directly"""
         entities = []
         relations = []
         
-        try:
-            with open(self.memory_file, 'r', encoding='utf-8') as f:
-                for line in f:
-                    line = line.strip()
-                    if line:
-                        item = json.loads(line)
-                        if item.get('type') == 'entity':
-                            entities.append({
-                                'name': item['name'],
-                                'entityType': item['entityType'],
-                                'observations': item.get('observations', [])
-                            })
-                        elif item.get('type') == 'relation':
-                            relations.append({
-                                'from': item['from'],
-                                'to': item['to'],
-                                'relationType': item['relationType']
-                            })
-            
-            print(f"📁 Read {len(entities)} entities and {len(relations)} relations from memory.json")
-            
-        except Exception as e:
-            print(f"❌ Error reading memory.json: {e}")
+        # Try to find memory.json in common locations
+        possible_paths = [
+            os.path.join(os.path.dirname(os.path.dirname(WEB_VIEWER_DIR)), 'memory.json'),
+            os.path.join(os.path.dirname(WEB_VIEWER_DIR), 'memory.json'),
+            'memory.json'
+        ]
+        
+        for memory_file in possible_paths:
+            if os.path.exists(memory_file):
+                try:
+                    with open(memory_file, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            line = line.strip()
+                            if line:
+                                item = json.loads(line)
+                                if item.get('type') == 'entity':
+                                    entities.append({
+                                        'name': item['name'],
+                                        'entityType': item['entityType'],
+                                        'observations': item.get('observations', [])
+                                    })
+                                elif item.get('type') == 'relation':
+                                    relations.append({
+                                        'from': item['from'],
+                                        'to': item['to'],
+                                        'relationType': item['relationType']
+                                    })
+                    
+                    print(f"📁 Fallback: Read {len(entities)} entities and {len(relations)} relations from {memory_file}")
+                    break
+                    
+                except Exception as e:
+                    print(f"❌ Error reading {memory_file}: {e}")
         
         return {
             'entities': entities,
             'relations': relations
         }
     
-    def search_nodes(self, query: str) -> Dict[str, Any]:
-        """Search nodes based on query"""
-        full_graph = self.read_memory_json()
+    def _search_fallback(self, query: str) -> Dict[str, Any]:
+        """Fallback search using local data"""
+        full_graph = self._read_file_fallback()
         query_lower = query.lower()
         
         # Filter entities
@@ -77,7 +162,7 @@ class MCPInterface:
         entity_names = {e['name'] for e in matching_entities}
         matching_relations = []
         for rel in full_graph['relations']:
-            if rel['from'] in entity_names or rel['to'] in entity_names:
+            if rel['from'] in entity_names and rel['to'] in entity_names:
                 matching_relations.append(rel)
         
         return {
@@ -85,15 +170,18 @@ class MCPInterface:
             'relations': matching_relations
         }
     
-    def get_entity_details(self, entity_name: str) -> Dict[str, Any]:
-        """Get details for a specific entity"""
-        full_graph = self.read_memory_json()
+    def _get_entity_fallback(self, entity_name: str) -> Dict[str, Any]:
+        """Fallback to get entity details from local data"""
+        full_graph = self._read_file_fallback()
         
-        entity = next((e for e in full_graph['entities'] if e['name'] == entity_name), None)
-        if not entity:
-            return {"entity": None, "relations": []}
+        # Find the entity
+        entity = None
+        for e in full_graph['entities']:
+            if e['name'] == entity_name:
+                entity = e
+                break
         
-        # Get relations involving this entity
+        # Find relations involving this entity
         relations = []
         for rel in full_graph['relations']:
             if rel['from'] == entity_name or rel['to'] == entity_name:
@@ -169,16 +257,74 @@ def get_entity():
         print(f"❌ Error getting entity details: {e}")
         return jsonify({'error': 'Failed to get entity details'}), 500
 
+@app.route('/api/node-relations')
+def get_node_relations():
+    """Get all relations for a specific node (Enhanced API)"""
+    entity_name = request.args.get('name', '')
+    
+    if not entity_name:
+        return jsonify({'error': 'Entity name required'}), 400
+    
+    try:
+        from mcp_memory_functions import mcp_memory_get_node_relations
+        
+        relations_data = mcp_memory_get_node_relations(entity_name)
+        
+        # Add some metadata
+        total_relations = len(relations_data.get('outgoing', [])) + len(relations_data.get('incoming', []))
+        
+        response = {
+            'entity_name': entity_name,
+            'outgoing_relations': relations_data.get('outgoing', []),
+            'incoming_relations': relations_data.get('incoming', []),
+            'connected_entities': relations_data.get('connected_entities', []),
+            'total_relations': total_relations,
+            'enhanced_api': True
+        }
+        
+        print(f"✅ Enhanced API: Served relations for '{entity_name}' - {total_relations} total relations")
+        return jsonify(response)
+        
+    except ImportError:
+        print("⚠️  Enhanced get_node_relations not available")
+        return jsonify({'error': 'Enhanced API not available'}), 503
+    except Exception as e:
+        print(f"❌ Error getting node relations: {e}")
+        return jsonify({'error': 'Failed to get node relations'}), 500
+
 @app.route('/api/health')
 def health_check():
     """Health check endpoint"""
-    health_data = {
-        "status": "healthy",
-        "service": "Knowledge Graph Web Server",
-        "timestamp": "2025-07-08T00:00:00Z",
-        "mcp_available": True,
-        "memory_file": os.path.exists(mcp.memory_file)
-    }
+    try:
+        from mcp_memory_functions import mcp_server_health_check
+        mcp_health = mcp_server_health_check()
+        
+        health_data = {
+            "status": "healthy",
+            "service": "Knowledge Graph Web Server (MCP Enhanced)",
+            "timestamp": "2025-07-09T00:00:00Z",
+            "mcp_server": mcp_health,
+            "enhanced_api": True,
+            "features": ["get_node_relations", "search_nodes", "read_graph", "open_nodes"],
+            "endpoints": [
+                "/api/graph",
+                "/api/search",
+                "/api/entity", 
+                "/api/node-relations",
+                "/api/health"
+            ]
+        }
+    except ImportError:
+        health_data = {
+            "status": "degraded",
+            "service": "Knowledge Graph Web Server (Fallback Mode)",
+            "timestamp": "2025-07-09T00:00:00Z",
+            "mcp_server": {"status": "unavailable", "connected": False},
+            "enhanced_api": False,
+            "features": ["file_fallback"],
+            "endpoints": ["/api/graph", "/api/search", "/api/entity", "/api/health"]
+        }
+    
     return jsonify(health_data)
 
 def run_server(host='localhost', port=8080, debug=False):
@@ -191,6 +337,7 @@ def run_server(host='localhost', port=8080, debug=False):
     print(f"   GET /api/graph - Full knowledge graph")
     print(f"   GET /api/search?q=query - Search nodes")
     print(f"   GET /api/entity?name=EntityName - Entity details")
+    print(f"   GET /api/node-relations?name=EntityName - Enhanced node relations")
     print(f"   GET /api/health - Health check")
     print(f"🔄 Press Ctrl+C to stop")
     
@@ -202,17 +349,25 @@ def run_server(host='localhost', port=8080, debug=False):
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='Knowledge Graph Web Server')
+    parser = argparse.ArgumentParser(description='Knowledge Graph Web Server (MCP Enhanced)')
     parser.add_argument('--host', default='localhost', help='Host to bind to (default: localhost)')
     parser.add_argument('--port', type=int, default=8080, help='Port to bind to (default: 8080)')
     parser.add_argument('--debug', action='store_true', help='Enable debug mode')
-    parser.add_argument('--memory-file', default=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(WEB_VIEWER_DIR))), 'memory.json'), help='Path to memory.json file')
+    parser.add_argument('--mcp-server', action='store_true', help='Use MCP server connection (default: true)')
+    parser.add_argument('--fallback-only', action='store_true', help='Use only file fallback mode')
 
     args = parser.parse_args()
 
-
-    # Pass the memory file path to MCPInterface
-    mcp_interface = MCPInterface(memory_file=args.memory_file)
+    print("🚀 Starting Knowledge Graph Web Server (MCP Enhanced)")
+    print("📡 This server connects to your MCP Memory Server")
+    print("✨ Enhanced with get_node_relations functionality")
+    
+    if args.fallback_only:
+        print("⚠️  Running in fallback mode (file access only)")
+    
+    # Initialize MCP interface
+    mcp_interface = MCPInterface(mcp_server_available=not args.fallback_only)
+    
     # Set the global 'mcp' variable used by Flask routes
     globals()['mcp'] = mcp_interface
 

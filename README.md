@@ -6,9 +6,9 @@ Modern tools for working with your professional knowledge graph using the **MCP 
 
 This directory provides a complete solution for managing and visualizing your professional network, projects, and relationships through:
 
-- **MCP Memory Server Integration** - Direct access to your knowledge graph data
-- **Interactive Web Visualization** - Modern D3.js-based graph viewer with real-time data
-- **Helper Functions** - Python utilities for data processing and analysis
+- **Direct Memory File Access** - Reads your knowledge graph data from memory.json files
+- **Interactive Web Visualization** - Modern D3.js-based graph viewer with real-time data  
+- **MCP-Compatible Functions** - Same function interface as MCP Memory Server, but with direct file access
 - **RESTful API** - HTTP endpoints for programmatic access
 
 ## Quick Start
@@ -17,10 +17,10 @@ This directory provides a complete solution for managing and visualizing your pr
 
 ```powershell
 # PowerShell (Recommended)
-./start-mcp-web-viewer.ps1
+./start-memory-explorer.ps1
 
-# Command Prompt / Batch
-start-mcp-web-viewer.bat
+# With custom memory file
+./start-memory-explorer.ps1 -MemoryFile "path/to/your/memory.json"
 ```
 
 **Access Points:**
@@ -31,12 +31,12 @@ start-mcp-web-viewer.bat
 
 ### 🌐 Features
 
-- **Real-time data** from your MCP Memory Server
+- **Real-time data** from your memory.json file
 - **Interactive D3.js visualization** with force-directed layout
 - **Entity-centered views** - click any entity to re-center the graph
 - **Live search** - find entities by name, type, or content
 - **Multi-select filtering** - filter by entity types with checkboxes
-- **Refresh capability** - reload data from MCP server without page refresh
+- **Refresh capability** - reload data from memory file without page refresh
 - **Professional styling** - modern, responsive UI design
 
 ### 🔧 Components
@@ -47,13 +47,16 @@ start-mcp-web-viewer.bat
 - `mcp-data.js` - MCP Data Provider with real API integration
 - `mcp_data_server.py` - Python HTTP server providing MCP data via REST API
 
-## MCP Memory Server Functions
+## Memory File Functions (MCP-Compatible)
 
 ### Core Functions
 
-- `mcp_memory_search_nodes(query)` - Search for entities and relations
-- `mcp_memory_read_graph()` - Get the complete knowledge graph
-- `mcp_memory_open_nodes([entity_names])` - Get specific entities
+These functions work exactly like MCP Memory Server functions, but read directly from your memory.json file:
+
+- `mcp_memory_search_nodes(query)` - Search for entities and relations in memory file
+- `mcp_memory_read_graph()` - Get the complete knowledge graph from memory file  
+- `mcp_memory_open_nodes([entity_names])` - Get specific entities from memory file
+- `mcp_memory_get_node_relations(entity_name)` - **Enhanced!** Get all relations for a specific entity
 
 ### Management Functions
 
@@ -97,7 +100,7 @@ When the MCP Data Server is running (via startup scripts), the following REST AP
 ### 1. Start the Web Viewer
 
 ```powershell
-./start-mcp-web-viewer.ps1
+./start-unified-server.ps1
 ```
 
 Open http://localhost:8080 to access the interactive visualization.
@@ -134,22 +137,57 @@ curl "http://localhost:8080/api/entity?name=Your%20Name"
 
 ## Benefits
 
-- **Live Data Access** - Always current information from your knowledge graph
-- **Interactive Visualization** - Modern web interface for exploring connections
+- **Live Data Access** - Always current information from your memory.json file
+- **Interactive Visualization** - Modern web interface for exploring connections  
+- **Enhanced Graph Traversal** - Advanced `get_node_relations` function for better entity exploration
 - **Programmatic Access** - Python functions and HTTP API for automation
 - **Rich Querying** - Advanced search and filtering capabilities
-- **Professional Integration** - RESTful API ready for other tools and workflows
+- **No External Dependencies** - Works directly with memory files, no MCP server needed
 
 
-## MCP Memory Server Setup
+## Architecture & Setup
 
-This project requires an MCP Memory Server as its backend for knowledge graph data. The MCP Memory Server is an open-source server that provides a RESTful API for storing and querying knowledge graphs.
+This project provides a web-based visualization for knowledge graphs stored in MCP Memory Server format.
 
-To set up and run the MCP Memory Server, follow the instructions in the official repository:
+### Current Implementation
 
-👉 [MCP Memory Server on GitHub](https://github.com/modelcontextprotocol/servers/tree/main/src/memory)
+**Simple & Effective Architecture:**
 
-You must have the server running and accessible to use the MemoryGraphExplorer web viewer and API tools.
+```text
+memory.json → Python API → Web Interface
+```
+
+1. **Data Storage**: `memory.json` file (JSONL format) containing entities and relations
+2. **Python API Layer**: `mcp_memory_functions.py` - Direct file access with MCP-compatible functions
+3. **Web Server**: `unified_server.py` - Flask server providing both static files and API endpoints
+4. **Frontend**: Interactive D3.js-based graph visualization
+
+### Key Features
+
+✅ **All MCP Memory Functions**: Read graph, search nodes, get relations, entity details
+✅ **Enhanced Graph Traversal**: `get_node_relations` for discovering entity connections
+✅ **Live Web Interface**: Real-time interactive visualization
+✅ **RESTful API**: HTTP endpoints for integration
+✅ **Direct File Access**: Fast, simple, no complex MCP client needed
+
+### Available API Endpoints
+
+- `GET /api/graph` - Full knowledge graph
+- `GET /api/search?q=query` - Search nodes
+- `GET /api/entity?name=EntityName` - Entity details
+- `GET /api/node-relations?name=EntityName` - **Enhanced**: Get all relations for a specific node
+- `GET /api/health` - Health check
+
+### Data Source
+
+The system reads from your existing `memory.json` file (JSONL format). You can use any MCP Memory Server to create and maintain this file, or work with it directly.
+
+**Compatible with:**
+
+- Original MCP Memory Server
+- Enhanced MCP Memory Server (with additional features)
+- Direct memory.json file manipulation
+- Any JSONL-formatted knowledge graph data
 
 ## Documentation
 
