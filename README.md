@@ -25,7 +25,7 @@ This directory provides a complete solution for managing and visualizing your pr
 
 **Access Points:**
 - **Web Interface:** http://localhost:8080
-- **MCP API:** http://localhost:8080/api
+- **REST API:** http://localhost:8080/api
 
 ## Interactive Web Viewer
 
@@ -88,7 +88,7 @@ Structured interface for common MCP memory operations and queries.
 
 ## API Endpoints
 
-When the MCP Data Server is running (via startup scripts), the following REST API endpoints are available:
+When the Memory Explorer is running (via startup script), the following REST API endpoints are available:
 
 - `GET /api/graph` - Full knowledge graph (entities and relations)
 - `GET /api/search?q=query` - Search entities by name, type, or content
@@ -100,7 +100,7 @@ When the MCP Data Server is running (via startup scripts), the following REST AP
 ### 1. Start the Web Viewer
 
 ```powershell
-./start-unified-server.ps1
+./start-memory-explorer.ps1
 ```
 
 Open http://localhost:8080 to access the interactive visualization.
