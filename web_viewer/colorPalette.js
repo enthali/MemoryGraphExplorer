@@ -7,10 +7,10 @@ export const COLOR_PALETTE = [
   '#f59e0b', // orange
   '#8b5cf6', // purple
   '#ef4444', // red
-  '#6366f1', // indigo
+  '#22d3ee', // cyan
   '#f472b6', // pink
   '#f43f5e', // rose
-  '#22d3ee', // cyan
+  '#6366f1', // indigo
   '#a3e635', // lime
   '#eab308', // yellow
   '#a21caf', // violet
