@@ -2,9 +2,9 @@
   "mcpServers": {
     "memory": {
       "command": "node",
-      "args": ["../MCP/modelcontextprotocol/servers/src/memory/dist/index.js"],
+      "args": ["C:/workspace/MCP/modelcontextprotocol/servers/src/memory/dist/index.js"],
       "env": {
-        "MEMORY_FILE_PATH": "../../memory.json"
+        "MEMORY_FILE_PATH": "C:/workspace/Journal/memory.json"
       }
     }
   }

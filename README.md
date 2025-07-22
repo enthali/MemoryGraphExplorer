@@ -1,196 +1,200 @@
-# Knowledge Graph Tools
+# Memory Graph Explorer
 
-Modern tools for working with your professional knowledge graph using the **MCP Memory Server** and interactive web visualization.
+A clean, modern web-based interface for exploring and visualizing knowledge graphs with access though the MCP Server memory (with proposed enhanements).
 
-## Overview
+## ✨ Features
 
-This directory provides a complete solution for managing and visualizing your professional network, projects, and relationships through:
+- 🎯 **Interactive Knowledge Graph Visualization** - Explore your memory graph with dynamic, interactive visuals
+- 🔍 **Smart Search & Filtering** - Find nodes and relationships quickly
+- 📊 **Entity Relationship Explorer** - Deep dive into connections between entities
+- 🚀 **Real-time Graph Updates** - Live data from your MCP Memory Server
+- 🎨 **Modern Clean UI** - Beautiful, responsive web interface
+- ⚡ **High Performance** - Direct MCP server integration via JSON-RPC
 
-- **Direct Memory File Access** - Reads your knowledge graph data from memory.json files
-- **Interactive Web Visualization** - Modern D3.js-based graph viewer with real-time data  
-- **MCP-Compatible Functions** - Same function interface as MCP Memory Server, but with direct file access
-- **RESTful API** - HTTP endpoints for programmatic access
+## 🏗️ Architecture
 
-## Quick Start
+**Clean KISS Architecture:**
 
-### Start the Interactive Web Viewer
+- **Web Server** (`server.py`) - Flask server with MCPClient for HTTP ↔ JSON-RPC translation
+- **MCP Memory Server** - Started automatically by web server using `mcp.json` configuration
+- **Frontend** - Modern web interface for graph visualization and interaction
+
+``` text
+HTTP API ← Web Server (MCPClient) ← JSON-RPC ← MCP Memory Server ← memory.json
+```
+
+## 🚀 Quick Start
+
+### 1. Prerequisites
+
+- **Node.js** (for MCP Memory Server)
+- **Python 3.8+** (for web server)
+- **MCP Memory Server** installed and configured
+
+### 2. Install Dependencies
 
 ```powershell
-# PowerShell (Recommended)
-./start-memory-explorer.ps1
-
-# With custom memory file
-./start-memory-explorer.ps1 -MemoryFile "path/to/your/memory.json"
+cd web_viewer
+npm install
+pip install flask flask-cors
 ```
 
-**Access Points:**
-- **Web Interface:** http://localhost:8080
-- **REST API:** http://localhost:8080/api
+### 3. Configure Memory Path
 
-## Interactive Web Viewer
+Edit `mcp.json` to point to your memory file:
 
-### 🌐 Features
+```json
+{
+  "mcpServers": {
+    "memory": {
+      "command": "node",
+      "args": ["C:/path/to/memory/server/index.js"],
+      "env": {
+        "MEMORY_FILE_PATH": "C:/path/to/your/memory.json"
+      }
+    }
+  }
+}
+```
 
-- **Real-time data** from your memory.json file
-- **Interactive D3.js visualization** with force-directed layout
-- **Entity-centered views** - click any entity to re-center the graph
-- **Live search** - find entities by name, type, or content
-- **Multi-select filtering** - filter by entity types with checkboxes
-- **Refresh capability** - reload data from memory file without page refresh
-- **Professional styling** - modern, responsive UI design
-
-### 🔧 Components
-
-- `index.html` - Main web interface
-- `main.js` - Application logic and UI handling
-- `graph.js` - D3.js visualization engine
-- `mcp-data.js` - MCP Data Provider with real API integration
-- `mcp_data_server.py` - Python HTTP server providing MCP data via REST API
-
-## Memory File Functions (MCP-Compatible)
-
-### Core Functions
-
-These functions work exactly like MCP Memory Server functions, but read directly from your memory.json file:
-
-- `mcp_memory_search_nodes(query)` - Search for entities and relations in memory file
-- `mcp_memory_read_graph()` - Get the complete knowledge graph from memory file  
-- `mcp_memory_open_nodes([entity_names])` - Get specific entities from memory file
-- `mcp_memory_get_node_relations(entity_name)` - **Enhanced!** Get all relations for a specific entity
-
-### Management Functions
-
-- `mcp_memory_create_entities(entities)` - Add new entities
-- `mcp_memory_create_relations(relations)` - Add new relationships
-- `mcp_memory_add_observations(observations)` - Add observations to entities
-- `mcp_memory_delete_entities(entity_names)` - Remove entities
-- `mcp_memory_delete_relations(relations)` - Remove relationships
-
-## Python Helper Tools
-
-### 📁 `mcp_helpers.py`
-
-Utility functions for processing and formatting MCP memory data:
-
-- `format_mcp_search_results()` - Format search results for display
-- `get_entity_connections()` - Extract connections for an entity
-- `format_entity_connections()` - Format connections for display
-- `generate_mermaid_diagram()` - Create Mermaid diagrams
-- `print_graph_stats()` - Display graph statistics
-
-### 📁 `demo_mcp_helpers.py`
-
-Working examples demonstrating the helper functions with sample data.
-
-### 📁 `mcp_kg_query.py`
-
-Structured interface for common MCP memory operations and queries.
-
-## API Endpoints
-
-When the Memory Explorer is running (via startup script), the following REST API endpoints are available:
-
-- `GET /api/graph` - Full knowledge graph (entities and relations)
-- `GET /api/search?q=query` - Search entities by name, type, or content
-- `GET /api/entity?name=EntityName` - Get specific entity details and relations
-- `GET /api/health` - Server health check and status
-
-## Usage Examples
-
-### 1. Start the Web Viewer
+### 4. Start the Server
 
 ```powershell
-./start-memory-explorer.ps1
+.\start-server.ps1
 ```
 
-Open http://localhost:8080 to access the interactive visualization.
+### 5. Open Your Browser
 
-### 2. Search for Entities (Python)
+Navigate to <http://localhost:8080> and explore your knowledge graph!
 
-```python
-# Search for all entities related to "Microsoft"
-results = mcp_memory_search_nodes("Microsoft")
-print(format_mcp_search_results(results, "Microsoft"))
+## 📡 API Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/graph` | Full knowledge graph data |
+| `GET /api/search?q=query` | Search nodes by query |
+| `GET /api/entity?name=EntityName` | Get specific entity details |
+| `GET /api/node-relations?name=EntityName` | Get all relations for a node |
+| `GET /api/health` | Health check and system status |
+
+## �️ Development
+
+### Run in Debug Mode
+
+```powershell
+cd web_viewer
+python server.py --debug
 ```
 
-### 3. Get Entity Connections (Python)
+### Test MCP Connection
 
-```python
-# Get connections for a specific person
-graph_data = mcp_memory_read_graph()
-connections = get_entity_connections(graph_data, "Your Name")
-print(format_entity_connections(connections, "Your Name"))
+```powershell
+cd testscripts
+python test_mcp_server.py
 ```
 
-### 4. API Access (HTTP)
-
-```bash
-# Get full graph data
-curl http://localhost:8080/api/graph
-
-# Search for entities
-curl "http://localhost:8080/api/search?q=automotive"
-
-# Get specific entity
-curl "http://localhost:8080/api/entity?name=Your%20Name"
-```
-
-## Benefits
-
-- **Live Data Access** - Always current information from your memory.json file
-- **Interactive Visualization** - Modern web interface for exploring connections  
-- **Enhanced Graph Traversal** - Advanced `get_node_relations` function for better entity exploration
-- **Programmatic Access** - Python functions and HTTP API for automation
-- **Rich Querying** - Advanced search and filtering capabilities
-- **No External Dependencies** - Works directly with memory files, no MCP server needed
-
-
-## Architecture & Setup
-
-This project provides a web-based visualization for knowledge graphs stored in MCP Memory Server format.
-
-### Current Implementation
-
-**Simple & Effective Architecture:**
+### Project Structure
 
 ```text
-memory.json → Python API → Web Interface
+MemoryGraphExplorer/
+├── mcp.json                    # MCP server configuration
+├── start-server.ps1           # Startup script
+├── web_viewer/
+│   ├── server.py              # Flask web server with MCPClient
+│   ├── index.html             # Main web interface
+│   ├── main.js                # Frontend JavaScript
+│   ├── graph.js               # Graph visualization
+│   ├── styles.css             # Styling
+│   └── package.json           # Frontend dependencies
+└── testscripts/
+    └── test_mcp_server.py     # MCP server testing
 ```
 
-1. **Data Storage**: `memory.json` file (JSONL format) containing entities and relations
-2. **Python API Layer**: `mcp_memory_functions.py` - Direct file access with MCP-compatible functions
-3. **Web Server**: `unified_server.py` - Flask server providing both static files and API endpoints
-4. **Frontend**: Interactive D3.js-based graph visualization
+## 🔧 Configuration
 
-### Key Features
+### Memory File Path
 
-✅ **All MCP Memory Functions**: Read graph, search nodes, get relations, entity details
-✅ **Enhanced Graph Traversal**: `get_node_relations` for discovering entity connections
-✅ **Live Web Interface**: Real-time interactive visualization
-✅ **RESTful API**: HTTP endpoints for integration
-✅ **Direct File Access**: Fast, simple, no complex MCP client needed
+Set your memory file location in `mcp.json`:
 
-### Available API Endpoints
+```json
+{
+  "mcpServers": {
+    "memory": {
+      "env": {
+        "MEMORY_FILE_PATH": "/path/to/your/memory.json"
+      }
+    }
+  }
+}
+```
 
-- `GET /api/graph` - Full knowledge graph
-- `GET /api/search?q=query` - Search nodes
-- `GET /api/entity?name=EntityName` - Entity details
-- `GET /api/node-relations?name=EntityName` - **Enhanced**: Get all relations for a specific node
-- `GET /api/health` - Health check
+### Server Options
 
-### Data Source
+```powershell
+python server.py --host 0.0.0.0 --port 3000 --debug
+```
 
-The system reads from your existing `memory.json` file (JSONL format). You can use any MCP Memory Server to create and maintain this file, or work with it directly.
+## 🎯 How It Works
 
-**Compatible with:**
+1. **Web Server Startup** - Reads `mcp.json` and starts its own MCP Memory Server process
+2. **MCP Connection** - Establishes JSON-RPC communication over stdio
+3. **HTTP API** - Translates REST calls to MCP tool calls
+4. **Frontend** - Interactive visualization of graph data
+5. **Cleanup** - Properly terminates MCP server on shutdown
 
-- Original MCP Memory Server
-- Enhanced MCP Memory Server (with additional features)
-- Direct memory.json file manipulation
-- Any JSONL-formatted knowledge graph data
+## 🧪 Testing
 
-## Documentation
+The system includes comprehensive testing:
 
-- `web_viewer/MCP_INTEGRATION.md` - Detailed implementation information
-- `MCP_IMPLEMENTATION_COMPLETE.md` - Complete development summary
-- `STARTUP_CLEANUP.md` - Information about simplified startup process
+- **`test_mcp_server.py`** - Direct MCP server protocol testing
+- **Health endpoint** - Runtime system validation
+- **Error handling** - Graceful failure and recovery
+
+## 🔄 MCP Protocol
+
+This implementation follows the **Model Context Protocol (MCP)** standard:
+
+- Each client starts its own MCP server process (no shared instances)
+- Communication via JSON-RPC over stdio
+- Standard MCP tool interface for memory operations
+
+**Official MCP Memory Server:** [modelcontextprotocol/servers/src/memory](https://github.com/modelcontextprotocol/servers/tree/main/src/memory)
+
+## 📝 License
+
+See `LICENSE` file for details.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+---
+
+## Built  using Flask, MCP, and modern web technologies**
+
+## 🏆 Key Achievement: Standard MCP Protocol Implementation
+
+**This is the biggest win:** We implement the **standard Model Context Protocol (MCP)** with **zero proprietary extensions**!
+
+✅ **Standard MCP JSON-RPC Protocol** - Full compliance with MCP specification  
+✅ **Standard MCP Memory Server** - Works with any compliant MCP Memory Server ([official implementation](https://github.com/modelcontextprotocol/servers/tree/main/src/memory))  
+✅ **Standard Tool Interface** - Uses official MCP tool names and parameters  
+✅ **Future-Proof Architecture** - Automatically benefits from upstream MCP improvements  
+
+**This means:**
+
+- 🔄 **Interoperability** - Works with any MCP Memory Server implementation
+- 🚀 **Upstream Benefits** - Server improvements automatically improve our system
+- 📈 **Extensibility** - Easy to add support for other MCP servers/tools
+- 🛠️ **Maintainability** - Standard protocol means predictable behavior
+
+**Related Links:**
+
+- 📋 **MCP Memory Server:** [Official Repository](https://github.com/modelcontextprotocol/servers/tree/main/src/memory)
+- 🔧 **API Enhancement PR:** [Enhanced node relations support](https://github.com/modelcontextprotocol/servers/pull/2310)
+
+*While we do propose API enhancements to the MCP Memory Server, these are optional and submitted upstream for community benefit.*

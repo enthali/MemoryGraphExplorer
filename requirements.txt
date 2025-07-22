@@ -1,20 +1,8 @@
-# Knowledge Graph Tools Dependencies
+# Memory Graph Explorer Dependencies
 
-# Core graph processing
-networkx>=2.8.0
+# Web Server
+flask>=2.3.0
+flask-cors>=4.0.0
 
-# Visualization libraries
-matplotlib>=3.5.0
-plotly>=5.0.0
-pyvis>=0.3.0
-
-# Data processing
-pandas>=1.5.0
-
-# Optional: Enhanced visualizations
-# seaborn>=0.11.0
-# bokeh>=2.4.0
-
-# Development dependencies (optional)
-# pytest>=7.0.0
-# black>=22.0.0
+# Development (optional)
+pytest>=7.0.0

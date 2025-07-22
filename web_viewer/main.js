@@ -99,7 +99,14 @@ class KnowledgeGraphApp {
             console.log(`✅ Loaded ${this.currentData.entities.length} entities and ${this.currentData.relations.length} relations`);
         } catch (error) {
             console.error('❌ Failed to load data:', error);
-            this.showError('Failed to load knowledge graph data');
+            this.showError(`Unable to connect to MCP Memory Server. Please ensure the server is running and has data loaded.
+
+Troubleshooting steps:
+1. Check that your memory.json file exists and contains data
+2. Verify the MCP Memory Server is configured correctly in mcp.json
+3. Restart the server if needed
+
+Error details: ${error.message}`);
             throw error;
         }
     }
@@ -389,7 +396,10 @@ class KnowledgeGraphApp {
     showError(message) {
         document.getElementById('loading').classList.add('hidden');
         const errorDiv = document.getElementById('error');
-        errorDiv.querySelector('p').textContent = `❌ ${message}`;
+        const messageElement = errorDiv.querySelector('p');
+        
+        // Handle multiline messages by preserving line breaks
+        messageElement.innerHTML = `❌ ${message.replace(/\n/g, '<br>')}`;
         errorDiv.classList.remove('hidden');
     }
 
