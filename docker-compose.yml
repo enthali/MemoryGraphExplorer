@@ -25,12 +25,9 @@ services:
     container_name: memory-graph-explorer
     ports:
       - "8080:8080"
-    volumes:
-      # Mount the memory.json file from its current location
-      - C:/workspace/Journal/memory.json:/app/data/memory.json
     environment:
       - FLASK_ENV=production
-      - MEMORY_FILE_PATH=/app/data/memory.json
+      - MCP_SERVER_URL=http://mcp-server:3001/mcp
     restart: unless-stopped
     depends_on:
       - mcp-server

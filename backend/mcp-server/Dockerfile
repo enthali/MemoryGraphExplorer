@@ -1,4 +1,4 @@
-FROM node:22.12-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Copy package files
 COPY package.json package-lock.json ./
@@ -11,7 +11,7 @@ COPY src/ ./src/
 WORKDIR /
 
 # Install dependencies
-RUN npm ci
+RUN apk update && apk upgrade && npm ci
 
 # Build the TypeScript code
 RUN npm run build

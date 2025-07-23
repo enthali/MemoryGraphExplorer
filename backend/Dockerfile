@@ -1,6 +1,9 @@
 # Dockerfile for MCP Memory Server
 FROM node:20-alpine
 
+# Update Alpine packages to fix vulnerabilities
+RUN apk update && apk upgrade
+
 WORKDIR /app
 
 # Copy MCP server files
