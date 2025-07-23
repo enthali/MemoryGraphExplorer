@@ -1,7 +1,25 @@
 version: '3.8'
 
 services:
-  # Memory Graph Explorer (Web + MCP Server)
+  # MCP Server Backend  
+  mcp-server:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: mcp-server
+    ports:
+      - "3001:3001"  # Expose MCP HTTP server
+    volumes:
+      # Mount the memory.json file from its current location
+      - C:/workspace/Journal/memory.json:/app/data/memory.json
+    environment:
+      - NODE_ENV=production
+      - MEMORY_FILE_PATH=/app/data/memory.json
+      - PORT=3001
+    command: ["node", "dist/streamableHttp-simple.js"]  # Use HTTP server
+    restart: unless-stopped
+
+  # Memory Graph Explorer (Web UI)
   memory-graph-explorer:
     build:
       context: .
@@ -16,5 +34,7 @@ services:
       - FLASK_ENV=production
       - MEMORY_FILE_PATH=/app/data/memory.json
     restart: unless-stopped
+    depends_on:
+      - mcp-server
 
-# No separate networks needed for single container
+# No separate networks needed for single container setup

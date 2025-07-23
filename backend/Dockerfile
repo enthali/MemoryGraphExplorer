@@ -4,9 +4,10 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copy MCP server files
-COPY mcp-server/package*.json ./
-COPY mcp-server/tsconfig.json ./
-COPY mcp-server/index.ts ./
+COPY backend/mcp-server/package*.json ./
+COPY backend/mcp-server/tsconfig.json ./
+COPY backend/mcp-server/index.ts ./
+COPY backend/mcp-server/streamableHttp-simple.ts ./
 
 # Install dependencies
 RUN npm install
@@ -14,11 +15,12 @@ RUN npm install
 # Build TypeScript
 RUN npm run build
 
-# Expose port for stdio communication (not actually used for MCP but good practice)
-EXPOSE 3000
+# Expose port for HTTP server
+EXPOSE 3001
 
 # Set environment variables
 ENV NODE_ENV=production
+ENV PORT=3001
 
-# Run the MCP server
+# Default to STDIO server, but can be overridden
 CMD ["node", "dist/index.js"]

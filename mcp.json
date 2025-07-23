@@ -1,8 +1,10 @@
 {
   "mcpServers": {
     "memory": {
-      "command": "node",
-      "args": ["./backend/mcp-server/dist/index.js"],
+      "transport": {
+        "type": "http",
+        "url": "http://localhost:3001/mcp"
+      },
       "env": {
         "MEMORY_FILE_PATH": "C:/workspace/Journal/memory.json"
       }
