@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  # Memory Graph Explorer (Web + MCP Server)
+  memory-graph-explorer:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: memory-graph-explorer
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount the memory.json file from its current location
+      - C:/workspace/Journal/memory.json:/app/data/memory.json
+    environment:
+      - FLASK_ENV=production
+      - MEMORY_FILE_PATH=/app/data/memory.json
+    restart: unless-stopped
+
+# No separate networks needed for single container

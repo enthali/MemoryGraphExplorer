@@ -53,12 +53,13 @@ class MCPClient:
             if "env" in memory_server_config:
                 env.update(memory_server_config["env"])
             
-            # Resolve server path (convert forward slashes to backslashes for Windows)
+            # Resolve server path (use forward slashes for cross-platform compatibility)
             server_path = server_command[1]  # First arg is usually the server script
             if not os.path.isabs(server_path):
                 # Relative path - resolve relative to mcp.json directory
                 server_path = os.path.join(os.path.dirname(mcp_config_path), server_path)
-            server_path = server_path.replace('/', '\\')
+            # Normalize path for the current OS
+            server_path = os.path.normpath(server_path)
             server_command[1] = server_path
             
             server_dir = os.path.dirname(server_path)
