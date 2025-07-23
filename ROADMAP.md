@@ -88,33 +88,48 @@ memory-graph-explorer/ # Your existing project enhanced
 
 ## Roadmap
 
-### Phase 1: Containerization
+### Phase 1: Containerization & Streamable HTTP Migration** ⏳
 
-**Goal:** Get current system running in Docker containers
+**Status Update:** Basic containerization completed, now migrating to unified MCP architecture.
 
-**Tasks:**
+**Current Goal:** Replace mixed STDIO/HTTP architecture with unified Streamable HTTP MCP server
 
-- [ ] Create project structure for memory-toolkit
-- [ ] Copy enhanced memory server to new structure
-- [ ] Create Dockerfile for memory server
-- [ ] Create Dockerfile for graph explorer
-- [ ] Create docker-compose.yml for full stack
-- [ ] Test deployment with existing memory.json
-- [ ] Update documentation
+**Remaining Tasks:**
+
+- [x] ~~Create project structure~~ ✅ Completed
+- [x] ~~Copy enhanced memory server~~ ✅ Completed  
+- [x] ~~Create Docker containers~~ ✅ Completed
+- [x] ~~Test containerized deployment~~ ✅ Working
+- [ ] **NEW: Migrate MCP server to Streamable HTTP transport**
+- [ ] **NEW: Update GitHub Copilot configuration to use HTTP MCP**
+- [ ] **NEW: Update web interface to use MCP client instead of custom API**
+- [ ] **NEW: Test unified MCP endpoint with multiple clients**
+- [ ] Update documentation with new architecture
 
 **Success Criteria:**
 
-- `docker-compose up` starts the entire system
-- Graph explorer works through containerized memory server
-- Existing memory.json data loads correctly
-- No functionality regression
+- ✅ ~~`docker-compose up` starts the entire system~~
+- ✅ ~~Graph explorer works through containerized memory server~~  
+- ✅ ~~Existing memory.json data loads correctly~~
+- ✅ ~~No functionality regression~~
+- [ ] **NEW: Single MCP server serves both GitHub Copilot and web interface**
+- [ ] **NEW: GitHub Copilot connects via HTTP (not STDIO)**
+- [ ] **NEW: Streamable HTTP transport with session management**
 
-**Files to Create:**
+**Architecture Evolution:**
+```
+Before: Mixed STDIO + HTTP → After: Unified Streamable HTTP MCP
+GitHub Copilot → STDIO → MCP Server     │  GitHub Copilot → HTTP → MCP Server
+Web Interface  → HTTP → Flask → MCP     │  Web Interface  → HTTP → Same MCP Server
+```
 
-- `memory-server/Dockerfile`
-- `graph-explorer/Dockerfile`
-- `docker-compose.yml`
-- Updated `README.md`
+**Files Created/Updated:**
+- ✅ `backend/Dockerfile` 
+- ✅ `frontend/Dockerfile`
+- ✅ `docker-compose.yml`
+- [ ] **NEW: `backend/mcp-server/src/streamable-http.ts`**
+- [ ] **NEW: Updated `mcp.json` (HTTP configuration)**
+- [ ] **NEW: `TARGET_ARCHITECTURE.md`**
 
 ### Phase 2: Logic Layer Extraction
 
