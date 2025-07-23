@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   # MCP Server Backend  
   mcp-server:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: backend/mcp-server
+      dockerfile: Dockerfile
     container_name: mcp-server
     ports:
       - "3001:3001"  # Expose MCP HTTP server

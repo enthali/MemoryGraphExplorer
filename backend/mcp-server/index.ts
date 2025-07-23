@@ -8,8 +8,25 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import { KnowledgeGraphManager } from './src/KnowledgeGraphManager.js';
+import { 
+  toolDefinitions,
+  createEntitiesHandler,
+  createRelationsHandler,
+  addObservationsHandler,
+  deleteEntitiesHandler,
+  deleteObservationsHandler,
+  deleteRelationsHandler,
+  readGraphHandler,
+  searchNodesHandler,
+  openNodesHandler,
+  getNodeRelationsHandler
+} from './src/tools/index.js';
 
 console.error('Starting MCP Streamable HTTP Server...');
+
+// Create Knowledge Graph Manager instance
+const knowledgeGraph = new KnowledgeGraphManager();
 
 // Create MCP server - following official StreamableHTTP pattern
 function createMCPServer() {
@@ -24,36 +41,7 @@ function createMCPServer() {
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
-      tools: [
-        {
-          name: "hello",
-          description: "A simple hello world tool",
-          inputSchema: {
-            type: "object",
-            properties: {
-              name: { 
-                type: "string", 
-                description: "Name to greet" 
-              },
-            },
-            required: ["name"],
-          },
-        },
-        {
-          name: "echo",
-          description: "Echo back the input",
-          inputSchema: {
-            type: "object", 
-            properties: {
-              message: {
-                type: "string",
-                description: "Message to echo back"
-              },
-            },
-            required: ["message"],
-          },
-        },
-      ],
+      tools: toolDefinitions
     };
   });
 
@@ -62,20 +50,26 @@ function createMCPServer() {
 
     try {
       switch (name) {
-        case "hello": {
-          const nameArg = (args as any)?.name || "World";
-          return {
-            content: [{ type: "text", text: `Hello, ${nameArg}!` }],
-          };
-        }
-
-        case "echo": {
-          const message = (args as any)?.message || "";
-          return {
-            content: [{ type: "text", text: `Echo: ${message}` }],
-          };
-        }
-
+        case "create_entities":
+          return await createEntitiesHandler(args as any, knowledgeGraph);
+        case "create_relations":
+          return await createRelationsHandler(args as any, knowledgeGraph);
+        case "add_observations":
+          return await addObservationsHandler(args as any, knowledgeGraph);
+        case "delete_entities":
+          return await deleteEntitiesHandler(args as any, knowledgeGraph);
+        case "delete_observations":
+          return await deleteObservationsHandler(args as any, knowledgeGraph);
+        case "delete_relations":
+          return await deleteRelationsHandler(args as any, knowledgeGraph);
+        case "read_graph":
+          return await readGraphHandler(args as any, knowledgeGraph);
+        case "search_nodes":
+          return await searchNodesHandler(args as any, knowledgeGraph);
+        case "open_nodes":
+          return await openNodesHandler(args as any, knowledgeGraph);
+        case "get_node_relations":
+          return await getNodeRelationsHandler(args as any, knowledgeGraph);
         default:
           throw new Error(`Unknown tool: ${name}`);
       }

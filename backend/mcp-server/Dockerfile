@@ -1,24 +1,37 @@
 FROM node:22.12-alpine AS builder
 
-COPY src/memory /app
-COPY tsconfig.json /tsconfig.json
+# Copy package files
+COPY package.json package-lock.json ./
+COPY tsconfig.json ./
 
-WORKDIR /app
+# Copy source code
+COPY index.ts ./
+COPY src/ ./src/
 
-RUN --mount=type=cache,target=/root/.npm npm install
+WORKDIR /
 
-RUN --mount=type=cache,target=/root/.npm-production npm ci --ignore-scripts --omit-dev
+# Install dependencies
+RUN npm ci
+
+# Build the TypeScript code
+RUN npm run build
 
 FROM node:22-alpine AS release
 
-COPY --from=builder /app/dist /app/dist
-COPY --from=builder /app/package.json /app/package.json
-COPY --from=builder /app/package-lock.json /app/package-lock.json
+# Copy built application and package files
+COPY --from=builder /dist /app/dist
+COPY --from=builder /package.json /app/package.json
+COPY --from=builder /package-lock.json /app/package-lock.json
 
 ENV NODE_ENV=production
 
 WORKDIR /app
 
+# Install only production dependencies
 RUN npm ci --ignore-scripts --omit-dev
 
-ENTRYPOINT ["node", "dist/streamableHttp-reference.js"]
+# Expose the port
+EXPOSE 3001
+
+# Start the server
+ENTRYPOINT ["node", "dist/index.js"]
