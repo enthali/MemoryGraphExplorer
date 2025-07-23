@@ -7,7 +7,6 @@ WORKDIR /app
 COPY backend/mcp-server/package*.json ./
 COPY backend/mcp-server/tsconfig.json ./
 COPY backend/mcp-server/index.ts ./
-COPY backend/mcp-server/streamableHttp-simple.ts ./
 
 # Install dependencies
 RUN npm install
@@ -22,5 +21,5 @@ EXPOSE 3001
 ENV NODE_ENV=production
 ENV PORT=3001
 
-# Default to STDIO server, but can be overridden
+# Default to main StreamableHTTP server
 CMD ["node", "dist/index.js"]

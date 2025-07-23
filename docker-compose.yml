@@ -16,7 +16,7 @@ services:
       - NODE_ENV=production
       - MEMORY_FILE_PATH=/app/data/memory.json
       - PORT=3001
-    command: ["node", "dist/streamableHttp-simple.js"]  # Use HTTP server
+    command: ["node", "dist/index.js"]  # Use main HTTP server
     restart: unless-stopped
 
   # Memory Graph Explorer (Web UI)
