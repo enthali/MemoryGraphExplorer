@@ -86,7 +86,7 @@ That's it! 🎉
 {
     "mcp": {
         "servers": {
-            "memory": {
+            "memory-graph": {
                 "url": "http://localhost:3001/mcp",
                 "type": "http"
             }

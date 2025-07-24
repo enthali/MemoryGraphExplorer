@@ -173,7 +173,7 @@ Different Protocols & Endpoints     │   ✅ Single HTTP Transport Throughout
 
 **Architecture Target:**
 
-```typescript
+```
 MCPServer → MemoryService → JSONDataAdapter → memory.json
 ```
 
