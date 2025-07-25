@@ -201,23 +201,50 @@ services:
 
 ## 🧪 Testing
 
-**Health Check:**
+**Run All Tests:**
+
 ```bash
-curl http://localhost:8080/api/health
+# Single command to run complete test suite
+node tests/run-tests.js
 ```
 
-**Test MCP Connection:**
+**Individual Tests:**
+
 ```bash
-# Check if MCP server is responding
+# Comprehensive API endpoint tests
+node tests/test-api-endpoints.js
+
+# MCP StreamableHTTP transport tests
+node tests/test-mcp-http.js
+
+# UI screenshot tests (requires Playwright)
+npx playwright test tests/test-screenshot.spec.js
+```
+
+**Manual Health Checks:**
+
+```bash
+# Quick health check
+curl http://localhost:8080/api/health
+
+# Test MCP connection
 curl -X POST http://localhost:3001/mcp \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
 **GitHub Copilot Test:**
+
 - Open VS Code in this directory
 - Ask Copilot: "Show me the current knowledge graph"
 - All 10 memory tools should be available
+
+**Test Coverage:**
+
+- ✅ **API Endpoints** - All web interface APIs (`/api/graph`, `/api/search`, etc.)
+- ✅ **MCP Protocol** - StreamableHTTP transport and tool calls
+- ✅ **UI Functionality** - Visual regression and interaction testing
+- ✅ **Error Handling** - Invalid requests and edge cases
 
 ## 🔄 MCP Protocol
 
