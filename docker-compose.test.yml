@@ -1,0 +1,13 @@
+# Test Data Configuration
+# Override for testing with sample data instead of live professional network
+
+services:
+  mcp-server:
+    volumes:
+      # Use test data instead of live Journal data
+      - ./data/memory-test.json:/app/data/memory.json
+    environment:
+      - NODE_ENV=development
+      - MEMORY_FILE_PATH=/app/data/memory.json
+      - PORT=3001
+      - TEST_MODE=true

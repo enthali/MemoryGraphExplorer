@@ -1,0 +1,11 @@
+{"type":"entity","entityType":"Person","name":"Alice Johnson","observations":["Software engineer with expertise in Node.js and TypeScript","Works at Tech Solutions Inc","Interested in MCP protocol development"]}
+{"type":"entity","entityType":"Company","name":"Tech Solutions Inc","observations":["Technology consulting company","Specializes in enterprise software solutions","Based in Seattle, Washington"]}
+{"type":"entity","entityType":"Project","name":"MCP Integration Project","observations":["Project to integrate Model Context Protocol","Started in Q2 2025","Focus on memory graph capabilities"]}
+{"type":"entity","entityType":"Person","name":"Bob Smith","observations":["Project manager at Tech Solutions Inc","Oversees MCP Integration Project","5 years experience in software project management"]}
+{"type":"entity","name":"Sarah Chen-Williams","entityType":"Person","observations":["Senior DevOps Engineer at Tech Solutions Inc","Expert in Kubernetes and container orchestration","Leads the infrastructure team for MCP Integration Project","Previously worked at Cloud Native Computing Foundation"]}
+{"type":"relation","from":"Alice Johnson","to":"Tech Solutions Inc","relationType":"employed by"}
+{"type":"relation","from":"Bob Smith","to":"Tech Solutions Inc","relationType":"employed by"}
+{"type":"relation","from":"Alice Johnson","to":"MCP Integration Project","relationType":"works on"}
+{"type":"relation","from":"Bob Smith","to":"MCP Integration Project","relationType":"manages"}
+{"type":"relation","from":"Sarah Chen-Williams","to":"Tech Solutions Inc","relationType":"employed by"}
+{"type":"relation","from":"Sarah Chen-Williams","to":"MCP Integration Project","relationType":"provides infrastructure for"}
