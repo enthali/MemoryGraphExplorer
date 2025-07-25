@@ -65,7 +65,7 @@ export class KnowledgeGraphManager {
     
     // Validate entity types
     for (const entity of entities) {
-      if (validEntityTypes.size > 0 && !validEntityTypes.has(entity.entityType)) {
+      if (!validEntityTypes.has(entity.entityType)) {
         const availableTypes = Array.from(validEntityTypes).sort();
         throw new MemoryGraphError(
           ErrorCode.INVALID_ENTITY_TYPE,
@@ -111,7 +111,7 @@ export class KnowledgeGraphManager {
       }
       
       // Validate relation types
-      if (validRelationTypes.size > 0 && !validRelationTypes.has(relation.relationType)) {
+      if (!validRelationTypes.has(relation.relationType)) {
         const availableTypes = Array.from(validRelationTypes).sort();
         throw new MemoryGraphError(
           ErrorCode.INVALID_RELATION_TYPE,
@@ -184,31 +184,56 @@ export class KnowledgeGraphManager {
     return this.loadGraph();
   }
 
-  // Very basic search function
-  async searchNodes(query: string): Promise<KnowledgeGraph> {
+  // Comprehensive graph search function - searches both entities and relations
+  async searchGraph(query: string): Promise<KnowledgeGraph> {
     const graph = await this.loadGraph();
     
-    // Filter entities
+    if (!query || query.trim() === '') {
+      return { entities: [], relations: [] };
+    }
+    
+    const lowerQuery = query.toLowerCase();
+    
+    // Filter entities (preserve existing functionality)
     const filteredEntities = graph.entities.filter((e: Entity) => 
-      e.name.toLowerCase().includes(query.toLowerCase()) ||
-      e.entityType.toLowerCase().includes(query.toLowerCase()) ||
-      e.observations.some((o: string) => o.toLowerCase().includes(query.toLowerCase()))
+      e.name.toLowerCase().includes(lowerQuery) ||
+      e.entityType.toLowerCase().includes(lowerQuery) ||
+      e.observations.some((o: string) => o.toLowerCase().includes(lowerQuery))
     );
   
     // Create a Set of filtered entity names for quick lookup
     const filteredEntityNames = new Set(filteredEntities.map((e: Entity) => e.name));
   
-    // Filter relations to only include those between filtered entities
-    const filteredRelations = graph.relations.filter((r: Relation) => 
-      filteredEntityNames.has(r.from) && filteredEntityNames.has(r.to)
-    );
+    // Filter relations - NEW comprehensive relation search
+    const filteredRelations = graph.relations.filter((r: Relation) => {
+      // Search by relation type
+      if (r.relationType.toLowerCase().includes(lowerQuery)) {
+        return true;
+      }
+      // Search by entity names in relations (from/to fields)
+      if (r.from.toLowerCase().includes(lowerQuery) || 
+          r.to.toLowerCase().includes(lowerQuery)) {
+        return true;
+      }
+      // Include relations between filtered entities (preserve existing behavior)
+      if (filteredEntityNames.has(r.from) && filteredEntityNames.has(r.to)) {
+        return true;
+      }
+      return false;
+    });
   
     const filteredGraph: KnowledgeGraph = {
       entities: filteredEntities,
       relations: filteredRelations,
     };
   
+    console.log(`Search "${query}": found ${filteredEntities.length} entities, ${filteredRelations.length} relations`);
     return filteredGraph;
+  }
+
+  // Legacy search function - delegates to searchGraph for backward compatibility
+  async searchNodes(query: string): Promise<KnowledgeGraph> {
+    return this.searchGraph(query);
   }
 
   async openNodes(names: string[]): Promise<KnowledgeGraph> {

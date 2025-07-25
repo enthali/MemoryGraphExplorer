@@ -7,7 +7,7 @@ import { deleteEntitiesHandler } from './delete-entities.js';
 import { deleteObservationsHandler } from './delete-observations.js';
 import { deleteRelationsHandler } from './delete-relations.js';
 import { readGraphHandler } from './read-graph.js';
-import { searchNodesHandler } from './search-nodes.js';
+import { searchGraphHandler } from './search-graph.js';
 import { openNodesHandler } from './open-nodes.js';
 import { getNodeRelationsHandler } from './get-node-relations.js';
 import { renameEntityHandler } from './rename-entity.js';
@@ -25,7 +25,7 @@ export {
   deleteObservationsHandler,
   deleteRelationsHandler,
   readGraphHandler,
-  searchNodesHandler,
+  searchGraphHandler,
   openNodesHandler,
   getNodeRelationsHandler,
   renameEntityHandler,
@@ -177,12 +177,15 @@ export const toolDefinitions = [
     }
   },
   {
-    name: "search_nodes",
-    description: "Search for nodes in the knowledge graph",
+    name: "search_graph",
+    description: "Search for entities and relations in the knowledge graph by name, type, or content. Supports comprehensive graph exploration including relation types, entity names, and relationship patterns.",
     inputSchema: {
       type: "object",
       properties: {
-        query: { type: "string" }
+        query: { 
+          type: "string",
+          description: "Search query to find matching entities and relations. Searches entity names, types, observations, relation types, and entity names in relations."
+        }
       },
       required: ["query"]
     }
