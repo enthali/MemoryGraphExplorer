@@ -59,6 +59,10 @@ export interface SearchNodesArgs {
   query: string;
 }
 
+export interface SearchGraphArgs {
+  query: string;
+}
+
 export interface OpenNodesArgs {
   names: string[];
 }

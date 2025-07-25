@@ -156,7 +156,8 @@ class MCPHTTPClient:
             # Map our tool names to MCP tool names
             tool_mapping = {
                 "memory_read_graph": "read_graph",
-                "memory_search_nodes": "search_nodes", 
+                "memory_search_nodes": "search_nodes",
+                "memory_search_graph": "search_graph",  # NEW comprehensive search tool
                 "memory_open_nodes": "open_nodes",
                 "memory_get_node_relations": "get_node_relations",
                 "health_check": "read_graph"  # Use read_graph as health check
@@ -276,20 +277,20 @@ def get_full_graph():
         return jsonify({'error': f'Failed to load graph data: {str(e)}'}), 500
 
 @app.route('/api/search')
-def search_nodes():
-    """Search nodes based on query parameter"""
+def search_graph():
+    """Search graph for entities and relations based on query parameter"""
     query = request.args.get('q', '')
     
     if not query:
         return jsonify({"entities": [], "relations": []})
     
     try:
-        search_results = mcp_client.call_tool("memory_search_nodes", {"query": query})
+        search_results = mcp_client.call_tool("memory_search_graph", {"query": query})
         print(f"✅ Search '{query}': found {len(search_results.get('entities', []))} entities, {len(search_results.get('relations', []))} relations")
         return jsonify(search_results)
     except Exception as e:
-        print(f"❌ Error searching nodes: {e}")
-        return jsonify({'error': f'Failed to search nodes: {str(e)}'}), 500
+        print(f"❌ Error searching graph: {e}")
+        return jsonify({'error': f'Failed to search graph: {str(e)}'}), 500
 
 @app.route('/api/entity')
 def get_entity():
@@ -371,7 +372,7 @@ def health_check():
             "mcp_server": health_result,
             "mcp_client_connected": mcp_client.connected,
             "session_id": mcp_client.session_id,
-            "features": ["memory_read_graph", "memory_search_nodes", "memory_open_nodes", "memory_get_node_relations"],
+            "features": ["memory_read_graph", "memory_search_nodes", "memory_search_graph", "memory_open_nodes", "memory_get_node_relations"],
             "endpoints": [
                 "/api/graph",
                 "/api/search",
