@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { Entity, Relation, KnowledgeGraph } from './types/index.js';
+import { Entity, Relation, KnowledgeGraph, ErrorCode, MemoryGraphError } from './types/index.js';
 
 /**
  * KnowledgeGraphManager handles all operations for the memory graph
@@ -58,6 +58,24 @@ export class KnowledgeGraphManager {
 
   async createRelations(relations: Relation[]): Promise<Relation[]> {
     const graph = await this.loadGraph();
+    const entityNames = new Set(graph.entities.map((e: Entity) => e.name));
+    
+    // Validate that all referenced entities exist
+    for (const relation of relations) {
+      if (!entityNames.has(relation.from)) {
+        throw new MemoryGraphError(
+          ErrorCode.ENTITY_NOT_FOUND,
+          `Source entity "${relation.from}" not found`
+        );
+      }
+      if (!entityNames.has(relation.to)) {
+        throw new MemoryGraphError(
+          ErrorCode.ENTITY_NOT_FOUND,
+          `Target entity "${relation.to}" not found`
+        );
+      }
+    }
+    
     const newRelations = relations.filter((r: Relation) => !graph.relations.some((existingRelation: Relation) =>
       existingRelation.from === r.from && 
       existingRelation.to === r.to && 
@@ -73,7 +91,10 @@ export class KnowledgeGraphManager {
     const results = observations.map(o => {
       const entity = graph.entities.find((e: Entity) => e.name === o.entityName);
       if (!entity) {
-        throw new Error(`Entity with name ${o.entityName} not found`);
+        throw new MemoryGraphError(
+          ErrorCode.ENTITY_NOT_FOUND,
+          `Entity with name "${o.entityName}" not found`
+        );
       }
       const newObservations = o.contents.filter(content => !entity.observations.includes(content));
       entity.observations.push(...newObservations);
@@ -186,5 +207,195 @@ export class KnowledgeGraphManager {
     ];
     
     return { outgoing, incoming, connected_entities };
+  }
+
+  async renameEntity(oldName: string, newName: string): Promise<{ relationsUpdated: number }> {
+    const graph = await this.loadGraph();
+    
+    // Check if old entity exists
+    const entityIndex = graph.entities.findIndex((e: Entity) => e.name === oldName);
+    if (entityIndex === -1) {
+      throw new MemoryGraphError(
+        ErrorCode.ENTITY_NOT_FOUND,
+        `Entity with name "${oldName}" not found`
+      );
+    }
+    
+    // Check if new name already exists
+    const existingEntity = graph.entities.find((e: Entity) => e.name === newName);
+    if (existingEntity) {
+      throw new MemoryGraphError(
+        ErrorCode.ENTITY_ALREADY_EXISTS,
+        `Entity with name "${newName}" already exists`
+      );
+    }
+    
+    // Rename the entity
+    graph.entities[entityIndex].name = newName;
+    
+    // Update all relations that reference this entity
+    let relationsUpdated = 0;
+    graph.relations.forEach((r: Relation) => {
+      if (r.from === oldName) {
+        r.from = newName;
+        relationsUpdated++;
+      }
+      if (r.to === oldName) {
+        r.to = newName;
+        relationsUpdated++;
+      }
+    });
+    
+    await this.saveGraph(graph);
+    return { relationsUpdated };
+  }
+
+  async validateIntegrity(autoFix: boolean = false): Promise<{
+    issues: Array<{ type: string; description: string; details?: any }>;
+    fixedIssues: string[];
+  }> {
+    const graph = await this.loadGraph();
+    const issues: Array<{ type: string; description: string; details?: any }> = [];
+    const fixedIssues: string[] = [];
+    let needsSave = false;
+
+    // Get all entity names for quick lookup
+    const entityNames = new Set(graph.entities.map((e: Entity) => e.name));
+    
+    // Check for orphaned relations (relations referencing non-existent entities)
+    const orphanedRelations: Relation[] = [];
+    graph.relations.forEach((r: Relation, index: number) => {
+      if (!entityNames.has(r.from)) {
+        issues.push({
+          type: ErrorCode.ORPHANED_RELATION,
+          description: `Relation references non-existent source entity "${r.from}"`,
+          details: { relation: r, index }
+        });
+        orphanedRelations.push(r);
+      }
+      if (!entityNames.has(r.to)) {
+        issues.push({
+          type: ErrorCode.ORPHANED_RELATION,
+          description: `Relation references non-existent target entity "${r.to}"`,
+          details: { relation: r, index }
+        });
+        orphanedRelations.push(r);
+      }
+    });
+
+    // Check for self-relations (entity pointing to itself)
+    graph.relations.forEach((r: Relation, index: number) => {
+      if (r.from === r.to) {
+        issues.push({
+          type: ErrorCode.SELF_RELATION,
+          description: `Entity "${r.from}" has a self-relation`,
+          details: { relation: r, index }
+        });
+      }
+    });
+
+    // Check for duplicate relations
+    const seenRelations = new Set<string>();
+    const duplicateRelations: Relation[] = [];
+    graph.relations.forEach((r: Relation, index: number) => {
+      const relationKey = `${r.from}->${r.to}:${r.relationType}`;
+      if (seenRelations.has(relationKey)) {
+        issues.push({
+          type: ErrorCode.DUPLICATE_RELATION,
+          description: `Duplicate relation found: ${relationKey}`,
+          details: { relation: r, index }
+        });
+        duplicateRelations.push(r);
+      } else {
+        seenRelations.add(relationKey);
+      }
+    });
+
+    // Check for entities with empty names or invalid data
+    graph.entities.forEach((e: Entity, index: number) => {
+      if (!e.name || e.name.trim() === '') {
+        issues.push({
+          type: ErrorCode.VALIDATION_ERROR,
+          description: `Entity at index ${index} has empty or invalid name`,
+          details: { entity: e, index }
+        });
+      }
+      if (!e.entityType || e.entityType.trim() === '') {
+        issues.push({
+          type: ErrorCode.VALIDATION_ERROR,
+          description: `Entity "${e.name}" has empty or invalid entity type`,
+          details: { entity: e, index }
+        });
+      }
+      if (!Array.isArray(e.observations)) {
+        issues.push({
+          type: ErrorCode.VALIDATION_ERROR,
+          description: `Entity "${e.name}" has invalid observations (not an array)`,
+          details: { entity: e, index }
+        });
+      }
+    });
+
+    // Auto-fix if requested
+    if (autoFix) {
+      // Remove orphaned relations
+      if (orphanedRelations.length > 0) {
+        const originalLength = graph.relations.length;
+        graph.relations = graph.relations.filter(r => !orphanedRelations.includes(r));
+        const removedCount = originalLength - graph.relations.length;
+        fixedIssues.push(`Removed ${removedCount} orphaned relations`);
+        needsSave = true;
+      }
+
+      // Remove duplicate relations (keep first occurrence)
+      if (duplicateRelations.length > 0) {
+        const seenKeys = new Set<string>();
+        const originalLength = graph.relations.length;
+        graph.relations = graph.relations.filter(r => {
+          const key = `${r.from}->${r.to}:${r.relationType}`;
+          if (seenKeys.has(key)) {
+            return false; // Remove duplicate
+          }
+          seenKeys.add(key);
+          return true;
+        });
+        const removedCount = originalLength - graph.relations.length;
+        fixedIssues.push(`Removed ${removedCount} duplicate relations`);
+        needsSave = true;
+      }
+
+      // Remove self-relations
+      const originalRelationsLength = graph.relations.length;
+      graph.relations = graph.relations.filter(r => r.from !== r.to);
+      const selfRelationsRemoved = originalRelationsLength - graph.relations.length;
+      if (selfRelationsRemoved > 0) {
+        fixedIssues.push(`Removed ${selfRelationsRemoved} self-relations`);
+        needsSave = true;
+      }
+
+      // Fix entity data issues (basic fixes)
+      graph.entities.forEach((e: Entity) => {
+        if (!Array.isArray(e.observations)) {
+          e.observations = [];
+          fixedIssues.push(`Fixed observations array for entity "${e.name}"`);
+          needsSave = true;
+        }
+      });
+
+      // Remove entities with empty names (can't be fixed, must be removed)
+      const originalEntitiesLength = graph.entities.length;
+      graph.entities = graph.entities.filter(e => e.name && e.name.trim() !== '');
+      const invalidEntitiesRemoved = originalEntitiesLength - graph.entities.length;
+      if (invalidEntitiesRemoved > 0) {
+        fixedIssues.push(`Removed ${invalidEntitiesRemoved} entities with invalid names`);
+        needsSave = true;
+      }
+
+      if (needsSave) {
+        await this.saveGraph(graph);
+      }
+    }
+
+    return { issues, fixedIssues };
   }
 }

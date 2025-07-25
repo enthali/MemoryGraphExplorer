@@ -20,7 +20,9 @@ import {
   readGraphHandler,
   searchNodesHandler,
   openNodesHandler,
-  getNodeRelationsHandler
+  getNodeRelationsHandler,
+  renameEntityHandler,
+  validateIntegrityHandler
 } from './src/tools/index.js';
 
 console.error('Starting MCP Streamable HTTP Server...');
@@ -70,6 +72,10 @@ function createMCPServer() {
           return await openNodesHandler(args as any, knowledgeGraph);
         case "get_node_relations":
           return await getNodeRelationsHandler(args as any, knowledgeGraph);
+        case "rename_entity":
+          return await renameEntityHandler(args as any, knowledgeGraph);
+        case "validate_integrity":
+          return await validateIntegrityHandler(args as any, knowledgeGraph);
         default:
           throw new Error(`Unknown tool: ${name}`);
       }
