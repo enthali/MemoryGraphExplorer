@@ -1,268 +1,154 @@
 # Memory Graph Explorer - Development Roadmap
 
-## Vision
+## Vision & Future Direction
 
-Transform the Memory Graph Explorer into a sophisticated, containerized memory management tool with clean architecture, proper separation of concerns, and multiple database backend options.
+Transform the Memory Graph Explorer into an even more sophisticated memory management tool with advanced features, enhanced performance, and expanded AI client ecosystem.
 
-**Target Architecture:**
+## Current State ✅ **PRODUCTION READY**
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    AI Clients (MCP Protocol)                    │
-├─────────────────┬─────────────────┬─────────────────┬───────────┤
-│  Graph Explorer │ GitHub Copilot  │ Claude Desktop  │    ...    │
-│      (Web)      │  (Agent Mode)   │     (Chat)      │           │
-└─────────────────┼─────────────────┼─────────────────┼───────────┘
-                  │                 │                 │
-                  ▼                 ▼                 ▼
-     ┌───────────────────────────────────────────────────────┐
-     │              MCP Protocol Interface                   │
-     └─────────────────────┬─────────────────────────────────┘
-                           ▼
-     ┌───────────────────────────────────────────────────────┐
-     │                Memory Tool Service                    │
-     │  ┌─────────────────────────────────────────────────┐  │
-     │  │           MCP Server Layer                      │  │
-     │  │     (get_node_relations, create_entities...)    │  │
-     │  └─────────────────┬───────────────────────────────┘  │
-     │                    ▼                                  │
-     │  ┌─────────────────────────────────────────────────┐  │
-     │  │        Business Logic Layer                     │  │
-     │  │  • Consistency validation                       │  │
-     │  │  • Graph algorithms                             │  │
-     │  │  • Complex queries                              │  │
-     │  │  • Data integrity rules                         │  │
-     │  └─────────────────┬───────────────────────────────┘  │
-     │                    ▼                                  │
-     │  ┌─────────────────────────────────────────────────┐  │
-     │  │         Database Layer                          │  │
-     │  │  • PostgreSQL / MongoDB / SQLite                │  │
-     │  │  • Optimized graph queries                      │  │
-     │  │  • ACID transactions                            │  │
-     │  │  • Indexing & performance                       │  │
-     │  └─────────────────────────────────────────────────┘  │
-     └───────────────────────────────────────────────────────┘
-                   ▲ (All containerized)
-```
+**Achieved Architecture (July 2025):**
+- ✅ **Unified StreamableHTTP MCP server** with 15 memory tools
+- ✅ **Container-first deployment** (`docker-compose up`)  
+- ✅ **GitHub Copilot integration** via HTTP MCP
+- ✅ **Web interface** with interactive graph visualization
+- ✅ **Business logic separation** in `KnowledgeGraphManager`
+- ✅ **Data validation & integrity** with auto-fix capabilities
+- ✅ **Session management** with multi-client support
 
-**Target directory structure**
-```
-memory-graph-explorer/ # Your existing project enhanced
-├── frontend/ # Current React/D3 visualization
-│ ├── web_viewer/ # Your current code
-│ └── Dockerfile # New: Containerize frontend
-│
-├── backend/ # Enhanced memory layer
-│ ├── memory-service/ # New: Your business logic
-│ │ ├── validation/ # Consistency checks
-│ │ ├── graph-algorithms/ # get_node_relations, etc.
-│ │ └── data-access/ # Database adapters
-│ ├── mcp-server/ # Enhanced MCP interface
-│ │ └── index.ts # Your improved server
-│ └── Dockerfile # New: Containerize backend
-│
-├── data/ # Database layer
-│ ├── json/ # Current JSON file storage
-│ ├── sqlite/ # New: SQLite option
-│ └── migrations/ # Database setup scripts
-│
-├── docker-compose.yml # New: Full stack deployment
-└── README.md # Enhanced documentation
-```
+**What works today:**
+- All 15 MCP memory tools operational
+- Docker containerization with health checks
+- Real-time graph visualization
+- Entity/relation management with validation
+- GitHub Copilot integration for memory operations
 
-## Current State
+## Future Development Roadmap
 
-✅ **Working Components:**
+### Phase 1: Enhanced Search Capabilities 🚧 **IN PROGRESS**
 
-- Memory Graph Explorer with D3.js visualization
-- Enhanced MCP server with `get_node_relations` function
-- JSON file-based storage (`memory.json`)
-- Basic MCP integration
+**Goal:** Add comprehensive search across both entities and relations (not just entities)
 
-❌ **Known Issues:**
+**GitHub Issue:** [#5 - Implement comprehensive search capabilities](https://github.com/enthali/MemoryGraphExplorer/issues/5)
 
-- Graph explorer breaks with inconsistent data (relations to non-existent entities)
-- No data validation layer
-- Monolithic architecture (MCP server + business logic mixed)
-- Native deployment only (no containerization)
+**Status:** Assigned to GitHub Copilot for automated implementation
 
-## Roadmap
-
-### Phase 1: Containerization & Streamable HTTP Migration ✅ **COMPLETED**
-
-**Status:** ✅ **SUCCESS! Full unified StreamableHTTP architecture operational**
-
-**Final Achievement:** Complete migration from mixed STDIO/HTTP to unified StreamableHTTP MCP architecture
-
-**Completed Tasks:**
-
-- [x] ~~Create project structure~~ ✅ Completed
-- [x] ~~Copy enhanced memory server~~ ✅ Completed  
-- [x] ~~Create Docker containers~~ ✅ Completed
-- [x] ~~Test containerized deployment~~ ✅ Working
-- [x] ~~**NEW: Basic StreamableHTTP transport implementation**~~ ✅ Working
-- [x] ~~**NEW: GitHub Copilot HTTP MCP configuration**~~ ✅ Working
-- [x] ~~**NEW: Session management and transport layer**~~ ✅ Working
-- [x] ~~**NEW: Full memory tools in HTTP MCP server**~~ ✅ **COMPLETED**
-- [x] ~~**NEW: Modular architecture with src/ directory**~~ ✅ **COMPLETED**
-- [x] ~~**NEW: All 10 memory operations working**~~ ✅ **COMPLETED**
-- [x] ~~**NEW: Web interface migrated to StreamableHTTP**~~ ✅ **COMPLETED**
-- [x] ~~**NEW: Complete containerized deployment**~~ ✅ **COMPLETED**
-
-**Success Criteria: ✅ ALL ACHIEVED**
-
-- ✅ ~~`docker-compose up` starts the entire system~~
-- ✅ ~~Graph explorer works through containerized memory server~~  
-- ✅ ~~Existing memory.json data loads correctly~~
-- ✅ ~~No functionality regression~~
-- ✅ ~~**NEW: GitHub Copilot connects via HTTP StreamableHTTP transport**~~
-- ✅ ~~**NEW: Session management and transport working**~~
-- ✅ ~~**NEW: Full memory tools working via GitHub Copilot MCP connection**~~ ✅ **COMPLETED**
-- ✅ ~~**NEW: All 10 memory operations (create_entities, read_graph, search_nodes, etc.)**~~ ✅ **COMPLETED**
-
-**Architecture Evolution: ✅ ACHIEVED**
-
-```
-BEFORE: Mixed STDIO + HTTP          →   AFTER: Unified StreamableHTTP MCP
-GitHub Copilot → STDIO → MCP Server │   ✅ GitHub Copilot → HTTP → MCP Server  
-Web Interface  → HTTP → Flask → MCP │   ✅ Web Interface  → HTTP → Same MCP Server
-Different Protocols & Endpoints     │   ✅ Single HTTP Transport Throughout
-```
-
-**Files Created/Updated: ✅ ALL COMPLETED**
-
-- ✅ `backend/Dockerfile` - MCP server containerization
-- ✅ `frontend/Dockerfile.http` - Web server containerization  
-- ✅ `docker-compose.yml` - Complete orchestration
-- ✅ `backend/mcp-server/index.ts` - StreamableHTTP server with modular architecture
-- ✅ `backend/mcp-server/src/` - Modular business logic (KnowledgeGraphManager + 10 tools)
-- ✅ `frontend/web_viewer/server.py` - StreamableHTTP web client with SSE parsing
-- ✅ `mcp.json` - VS Code HTTP MCP configuration  
-- ✅ **Installation: `docker-compose up` - That's it!** 🚀
-
-**Phase 1 Deliverables:**
-
-- 🔧 **Unified StreamableHTTP MCP Server** with all 10 memory tools
-- 🤖 **GitHub Copilot Integration** via HTTP transport
-- 🌐 **Web Interface** with StreamableHTTP client
-- 📦 **Complete Docker Architecture** - just run `docker-compose up`
-- 🏗️ **Modular Codebase** ready for Phase 2 enhancements
-
-### Phase 2: Logic Layer Extraction ⏳ **NEXT**
-
-**Goal:** Separate business logic from MCP protocol interface for better maintainability
-
-**Status:** Ready to begin - Foundation completed in Phase 1
-
-**Tasks:**
-
-- [ ] Create business logic layer (MemoryService class)
-- [ ] Extract validation logic (entity existence checks)
-- [ ] Extract graph algorithms (get_node_relations, search optimization)
-- [ ] Create data access interface (still using JSON)
-- [ ] Update MCP server to use business logic layer
-- [ ] Add comprehensive error handling
-- [ ] Test consistency validation (prevent graph explorer breakage)
+**Key Features:**
+- [ ] New `search_graph` tool replacing `search_nodes`
+- [ ] Search entities AND relations simultaneously  
+- [ ] Relation type discovery and filtering
+- [ ] Enhanced web interface search with relation results
+- [ ] Backward compatibility with existing search patterns
 
 **Success Criteria:**
+- Users can search "works at Microsoft" and find both entities and "employment" relations
+- Web interface shows both entity and relation search results
+- Performance remains fast for typical knowledge graph sizes
+- Existing search functionality preserved
 
-- Clean separation: MCP Protocol ↔ Business Logic ↔ Data Access
-- Graph explorer no longer breaks on invalid data
-- All existing functionality preserved
-- Error messages when trying to create invalid relations
+### Phase 2: Advanced Graph Algorithms 🔮 **FUTURE**
 
-**Architecture Target:**
+**Goal:** Add graph analysis capabilities for deeper insights
 
-```
-MCPServer → MemoryService → JSONDataAdapter → memory.json
-```
+**Potential Features:**
+- [ ] Shortest path finding between entities
+- [ ] Connected component analysis  
+- [ ] Community detection algorithms
+- [ ] Relationship pattern analysis
+- [ ] Graph traversal with depth limits
+- [ ] Centrality metrics (betweenness, closeness, etc.)
 
-### Phase 3: Database Migration (Future - When Ready)
+**Use Cases:**
+- "How is John connected to Microsoft?" (shortest path)
+- "Find all disconnected entity clusters" (components)
+- "Who are the most connected people?" (centrality)
 
-**Goal:** Add database backend options for better performance and features
+### Phase 3: Database Performance Options 📊 **WHEN NEEDED**
 
-**Options (in priority order):**
+**Goal:** Scale to larger datasets with database backends
 
-1. **SQLite** - Local, file-based, better performance than JSON
-2. **PostgreSQL** - Production-ready, excellent graph extensions
-3. **Cosmos DB** - Experimentation with cloud graph database (~$30-80/month)
+**Trigger Criteria:** JSON performance becomes limiting (>10K entities/relations)
 
-**Tasks:**
+**Options:**
+1. **SQLite** - Local database with graph queries
+2. **PostgreSQL** - Production database with advanced indexing
+3. **Neo4j** - Native graph database for complex analysis
 
-- [ ] Create DatabaseAdapter interface
-- [ ] Implement SQLiteAdapter
-- [ ] Add database migration scripts
-- [ ] Create environment-based database selection
-- [ ] Performance testing and comparison
-- [ ] Optional: PostgreSQL adapter
-- [ ] Optional: Cosmos DB adapter with Gremlin API
+**Features:**
+- [ ] Database adapter pattern for multiple backends
+- [ ] Migration tools from JSON to database formats
+- [ ] Environment-based storage selection
+- [ ] Performance benchmarking and optimization
 
-**Success Criteria:**
+### Phase 4: Extended AI Client Ecosystem 🤖 **EXPLORATION**
 
-- Runtime database switching via environment variables
-- Performance improvement for large graphs
-- Data migration path from JSON
-- All adapters pass the same test suite
+**Goal:** Expand beyond GitHub Copilot to other AI platforms
 
-## Time Budget & Constraints
+**Potential Integrations:**
+- [ ] Claude Desktop MCP configuration
+- [ ] OpenAI GPT integration via MCP
+- [ ] Anthropic Workbench integration
+- [ ] Custom AI agent frameworks
 
+**Benefits:**
+- Universal memory layer across all AI tools
+- Consistent knowledge graph regardless of AI client
+- Future-proof architecture for new AI platforms
+
+## Development Principles
+
+### Time Budget & Approach
 - **Available Time:** 2-4 hours per week
-- **Priority:** Tool must remain usable throughout development
+- **Priority:** Tool must remain usable throughout development  
 - **Approach:** Incremental improvements, no big-bang rewrites
 - **Testing:** Use real memory.json data throughout development
 
+### Quality Standards
+- **No Regression:** All existing functionality must be preserved
+- **Documentation First:** Update docs as part of every enhancement
+- **Container First:** All new features must work in Docker environment
+- **MCP Standard:** Follow Model Context Protocol specifications
+
 ## Success Metrics
 
-### Phase 1 Success
+### Short Term (Next 3 months)
+- Enhanced search capabilities operational (Phase 1)
+- Relation search integrated into web interface
+- Documentation maintained and current
+- GitHub Copilot integration stable
 
-- Docker deployment works reliably
-- Development environment is containerized
-- Tool is easier to deploy and share
+### Medium Term (6-12 months)  
+- Advanced graph algorithms available (Phase 2)
+- Performance optimization for larger datasets
+- Extended AI client ecosystem (Phase 4)
+- Community feedback and adoption
 
-### Phase 2 Success
+### Long Term (12+ months)
+- Database performance options if needed (Phase 3)
+- Production deployment patterns established
+- Graph analytics and insights features
+- Multi-user capabilities
 
-- Graph explorer never breaks due to data inconsistency
-- Clear error messages for invalid operations
-- Code is properly separated and maintainable
+## Technology Decisions
 
-### Phase 3 Success
+### Core Architecture
+- **MCP Protocol:** Universal interface for all AI clients
+- **StreamableHTTP:** Modern transport for web-friendly deployment
+- **TypeScript:** Type safety and developer experience
+- **Docker:** Container-first deployment and development
 
-- Improved performance with larger datasets
-- Flexible database backend selection
-- Production-ready deployment options
+### Database Strategy
+- **JSON First:** Continue with current proven approach
+- **SQLite When Needed:** Local database for performance scaling
+- **PostgreSQL for Production:** Advanced features when required
+- **Migration Strategy:** Seamless upgrades between storage types
 
-## Future Enhancements (Beyond Core Roadmap)
-
-- **CI/CD Pipeline:** Automated testing and deployment
-- **Graph Algorithms:** Shortest path, clustering, community detection
-- **Advanced Visualization:** Timeline views, filtering, search interface
+### Future Considerations
+- **Graph Analytics:** Advanced algorithms for relationship insights
 - **Multi-user Support:** Authentication and data isolation
-- **Graph Analytics:** Statistics, relationship patterns, insights
-- **API Extensions:** REST API alongside MCP protocol
 - **Cloud Deployment:** Azure Container Instances, Kubernetes
-
-## Decision Log
-
-### Architecture Decisions
-
-- **MCP Protocol:** Keep as universal interface for all AI clients
-- **Step-by-step approach:** Prioritize working tool over complete architecture
-- **JSON-first:** Start with current format, migrate to databases later
-- **Docker-first:** Containerization before architectural changes
-
-### Database Selection
-
-- **SQLite:** Best first database upgrade (local, reliable, SQL)
-- **PostgreSQL:** Production choice for complex queries and reliability
-- **Cosmos DB:** Experimentation platform for learning cloud graph databases
-
-### Time Management
-
-- **Focus on value:** Each phase must improve the tool's usability
-- **No regression:** Tool must work throughout development
-- **Documentation:** Capture decisions and progress for future reference
+- **API Extensions:** REST API alongside MCP protocol
 
 ---
 
-*Last Updated: July 23, 2025*
-*Next Review: After Phase 1 completion*
+*Last Updated: July 25, 2025*  
+*Next Review: After Phase 1 (Enhanced Search) completion*
