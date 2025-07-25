@@ -4,12 +4,25 @@
 {"type":"entity","entityType":"Person","name":"Bob Smith","observations":["Project manager at Tech Solutions Inc","Oversees MCP Integration Project","5 years experience in software project management"]}
 {"type":"entity","name":"Sarah Chen-Williams","entityType":"Person","observations":["Senior DevOps Engineer at Tech Solutions Inc","Expert in Kubernetes and container orchestration","Leads the infrastructure team for MCP Integration Project","Previously worked at Cloud Native Computing Foundation"]}
 {"type":"entity","name":"Test Person Valid","entityType":"Person","observations":["This should work"]}
+{"type":"entity","entityType":"Person","name":"Max Mustermann","observations":["Freelancer who works independently","Works on Web Project","Owner of Mustermann GmbH","Professional software developer"]}
+{"type":"entity","entityType":"Company","name":"Mustermann GmbH","observations":["Max Mustermann's own company","German limited liability company (GmbH)","Technology consulting firm"]}
+{"type":"entity","entityType":"Project","name":"Web Project","observations":["Software development project","Involves multiple team members","Currently in active development"]}
+{"type":"entity","entityType":"Person","name":"Anna Mustermann","observations":["Project manager at Mustermann GmbH","Manages the Web Project","Works for Max Mustermann's company","Experienced in project coordination"]}
 {"type":"relation","from":"Alice Johnson","to":"Tech Solutions Inc","relationType":"employed by"}
 {"type":"relation","from":"Bob Smith","to":"Tech Solutions Inc","relationType":"employed by"}
 {"type":"relation","from":"Alice Johnson","to":"MCP Integration Project","relationType":"works on"}
 {"type":"relation","from":"Bob Smith","to":"MCP Integration Project","relationType":"manages"}
 {"type":"relation","from":"Sarah Chen-Williams","to":"Tech Solutions Inc","relationType":"employed by"}
-{"type":"relation","from":"Sarah Chen-Williams","to":"MCP Integration Project","relationType":"provides infrastructure for"}
+{"type":"relation","from":"Max Mustermann","relationType":"works on","to":"Web Project"}
+{"type":"relation","from":"Alice Johnson","relationType":"works on","to":"Web Project"}
+{"type":"relation","from":"Max Mustermann","relationType":"owns","to":"Mustermann GmbH"}
+{"type":"relation","from":"Anna Mustermann","relationType":"employed by","to":"Mustermann GmbH"}
+{"type":"relation","from":"Anna Mustermann","relationType":"manages","to":"Web Project"}
+{"type":"relation","from":"Sarah Chen-Williams","relationType":"works on","to":"MCP Integration Project"}
 {"type":"typeDefinition","name":"Person","objectType":"entityType","description":"Individual people"}
 {"type":"typeDefinition","name":"Company","objectType":"entityType","description":"Business organizations"}
 {"type":"typeDefinition","name":"employed by","objectType":"relationType","description":"Current employment relationship"}
+{"type":"typeDefinition","name":"Project","objectType":"entityType","description":"Software development projects and initiatives"}
+{"type":"typeDefinition","name":"works on","objectType":"relationType","description":"Working on a project or assignment"}
+{"type":"typeDefinition","name":"owns","objectType":"relationType","description":"Ownership relationship (person owns company/asset)"}
+{"type":"typeDefinition","name":"manages","objectType":"relationType","description":"Management or supervision relationship (person manages project/team)"}
