@@ -19,6 +19,7 @@ import {
   deleteRelationsHandler,
   readGraphHandler,
   searchNodesHandler,
+  searchGraphHandler,
   openNodesHandler,
   getNodeRelationsHandler,
   renameEntityHandler,
@@ -71,6 +72,8 @@ function createMCPServer() {
           return await readGraphHandler(args as any, knowledgeGraph);
         case "search_nodes":
           return await searchNodesHandler(args as any, knowledgeGraph);
+        case "search_graph":
+          return await searchGraphHandler(args as any, knowledgeGraph);
         case "open_nodes":
           return await openNodesHandler(args as any, knowledgeGraph);
         case "get_node_relations":
