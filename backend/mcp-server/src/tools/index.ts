@@ -10,6 +10,8 @@ import { readGraphHandler } from './read-graph.js';
 import { searchNodesHandler } from './search-nodes.js';
 import { openNodesHandler } from './open-nodes.js';
 import { getNodeRelationsHandler } from './get-node-relations.js';
+import { renameEntityHandler } from './rename-entity.js';
+import { validateIntegrityHandler } from './validate-integrity.js';
 
 // Export all handlers
 export {
@@ -22,7 +24,9 @@ export {
   readGraphHandler,
   searchNodesHandler,
   openNodesHandler,
-  getNodeRelationsHandler
+  getNodeRelationsHandler,
+  renameEntityHandler,
+  validateIntegrityHandler
 };
 
 // Tool definitions for the MCP server
@@ -200,6 +204,31 @@ export const toolDefinitions = [
         nodeName: { type: "string" }
       },
       required: ["nodeName"]
+    }
+  },
+  {
+    name: "rename_entity",
+    description: "Rename an entity and update all related relations atomically",
+    inputSchema: {
+      type: "object",
+      properties: {
+        oldName: { type: "string" },
+        newName: { type: "string" }
+      },
+      required: ["oldName", "newName"]
+    }
+  },
+  {
+    name: "validate_integrity",
+    description: "Validate the integrity of the knowledge graph and optionally fix issues",
+    inputSchema: {
+      type: "object",
+      properties: {
+        autoFix: { 
+          type: "boolean",
+          description: "Whether to automatically fix detected issues"
+        }
+      }
     }
   }
 ];

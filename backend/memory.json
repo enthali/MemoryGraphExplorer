@@ -1,0 +1,6 @@
+{"type":"entity","name":"John","entityType":"Person","observations":["Software engineer","Lives in San Francisco"]}
+{"type":"entity","name":"Jane","entityType":"Person","observations":["Data scientist","Works remotely"]}
+{"type":"entity","name":"Acme Corp","entityType":"Company","observations":["Technology company","Founded in 2020"]}
+{"type":"relation","from":"John","to":"Acme Corp","relationType":"works_at"}
+{"type":"relation","from":"Jane","to":"Acme Corp","relationType":"works_at"}
+{"type":"relation","from":"John","to":"Jane","relationType":"colleague_of"}

@@ -1,0 +1,18 @@
+{
+  "name": "memory-graph-explorer",
+  "version": "1.0.0",
+  "description": "Memory Graph Explorer with MCP Server",
+  "scripts": {
+    "start": "docker-compose up",
+    "start:prod": "docker-compose down && docker-compose -f docker-compose.yml up",
+    "start:test": "docker-compose down && docker-compose -f docker-compose.yml -f docker-compose.test.yml up",
+    "build": "docker-compose build",
+    "down": "docker-compose down",
+    "test:features": "node tests/test-copilot-features.js",
+    "test:integration": "npm run start:test & sleep 5 && npm run test:features",
+    "logs": "docker-compose logs -f"
+  },
+  "keywords": ["memory", "graph", "mcp", "knowledge-graph"],
+  "author": "Microsoft CTO Automotive and Mobility",
+  "license": "MIT"
+}
