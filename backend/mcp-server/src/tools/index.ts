@@ -7,7 +7,6 @@ import { deleteEntitiesHandler } from './delete-entities.js';
 import { deleteObservationsHandler } from './delete-observations.js';
 import { deleteRelationsHandler } from './delete-relations.js';
 import { readGraphHandler } from './read-graph.js';
-import { searchNodesHandler } from './search-nodes.js';
 import { searchGraphHandler } from './search-graph.js';
 import { openNodesHandler } from './open-nodes.js';
 import { getNodeRelationsHandler } from './get-node-relations.js';
@@ -26,7 +25,6 @@ export {
   deleteObservationsHandler,
   deleteRelationsHandler,
   readGraphHandler,
-  searchNodesHandler,
   searchGraphHandler,
   openNodesHandler,
   getNodeRelationsHandler,
@@ -176,17 +174,6 @@ export const toolDefinitions = [
     inputSchema: {
       type: "object",
       properties: {}
-    }
-  },
-  {
-    name: "search_nodes",
-    description: "Search for nodes in the knowledge graph",
-    inputSchema: {
-      type: "object",
-      properties: {
-        query: { type: "string" }
-      },
-      required: ["query"]
     }
   },
   {
