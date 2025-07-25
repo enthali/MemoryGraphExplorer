@@ -1,41 +1,53 @@
 #!/usr/bin/env pwsh
-# Start Web Server with MCP Integration
-# The web server will automatically start and connect to the MCP Memory Server
-# If MCP server connection fails, clear error messages will be shown to the user
+# Start Memory Graph Explorer (Containerized)
+# Modern Docker-based deployment with unified StreamableHTTP MCP architecture
 
 param(
-    [string]$MemoryFile = ""
+    [switch]$Build = $false,
+    [switch]$Background = $false,
+    [switch]$Logs = $false
 )
 
-Write-Host "🚀 Starting Knowledge Graph Web Server with MCP Integration..." -ForegroundColor Green
+Write-Host "🚀 Starting Memory Graph Explorer (Containerized)..." -ForegroundColor Green
 
 # Get the directory where this script is located
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location $ScriptDir
 
-# Set memory file path if provided
-if ($MemoryFile -ne "") {
-    $env:MEMORY_FILE_PATH = $MemoryFile
-    Write-Host "📄 Using memory file: $MemoryFile" -ForegroundColor Cyan
+Write-Host "📦 Using Docker Compose for unified StreamableHTTP architecture..." -ForegroundColor Cyan
+Write-Host ""
+
+# Build containers if requested
+if ($Build) {
+    Write-Host "🔨 Building containers..." -ForegroundColor Yellow
+    docker-compose build
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ Build failed!" -ForegroundColor Red
+        exit 1
+    }
 }
 
-# Start the web server in foreground (it will start its own MCP server)
-Write-Host "🌐 Starting web server (will auto-start MCP server)..." -ForegroundColor Green
-Write-Host ""
-Write-Host "📡 Web Interface will be available at: http://localhost:8080" -ForegroundColor Cyan
-Write-Host "📡 The web server will read mcp.json and start the MCP Memory Server automatically" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "Press Ctrl+C to stop both servers..." -ForegroundColor Gray
-Write-Host ""
-
-# Change to web_viewer directory and start web server
-$WebViewerDir = Join-Path $ScriptDir "web_viewer"
-Set-Location $WebViewerDir
-
-try {
-    python server.py --host localhost --port 8080
-} catch {
-    Write-Host "🛑 Web server stopped" -ForegroundColor Yellow
-} finally {
+# Start containers
+Write-Host "🚀 Starting containers..." -ForegroundColor Green
+if ($Background) {
+    docker-compose up -d
+} else {
+    Write-Host "📡 Services starting:" -ForegroundColor Cyan
+    Write-Host "   🔧 MCP Server (StreamableHTTP): http://localhost:3001/mcp" -ForegroundColor Gray
+    Write-Host "   🌐 Web Interface: http://localhost:8080" -ForegroundColor Gray
+    Write-Host "   🤖 GitHub Copilot: Configure VS Code with memory-graph server" -ForegroundColor Gray
     Write-Host ""
-    Write-Host "✅ All servers stopped" -ForegroundColor Green
+    Write-Host "Press Ctrl+C to stop all services..." -ForegroundColor Gray
+    Write-Host ""
+    
+    docker-compose up
 }
+
+# Show logs if requested
+if ($Logs) {
+    Write-Host "� Showing logs..." -ForegroundColor Cyan
+    docker-compose logs -f
+}
+
+Write-Host ""
+Write-Host "✅ Memory Graph Explorer stopped" -ForegroundColor Green
