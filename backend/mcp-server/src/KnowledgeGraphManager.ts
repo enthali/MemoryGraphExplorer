@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { Entity, Relation, KnowledgeGraph, ErrorCode, MemoryGraphError } from './types/index.js';
+import { Entity, Relation, KnowledgeGraph, TypeDefinition, ErrorCode, MemoryGraphError } from './types/index.js';
 
 /**
  * KnowledgeGraphManager handles all operations for the memory graph
@@ -30,11 +30,15 @@ export class KnowledgeGraphManager {
         const item = JSON.parse(line);
         if (item.type === "entity") graph.entities.push(item as Entity);
         if (item.type === "relation") graph.relations.push(item as Relation);
+        if (item.type === "typeDefinition") {
+          if (!graph.types) graph.types = [];
+          graph.types.push(item as TypeDefinition);
+        }
         return graph;
-      }, { entities: [], relations: [] });
+      }, { entities: [], relations: [], types: [] });
     } catch (error) {
       if (error instanceof Error && 'code' in error && (error as any).code === "ENOENT") {
-        return { entities: [], relations: [] };
+        return { entities: [], relations: [], types: [] };
       }
       throw error;
     }
@@ -44,12 +48,36 @@ export class KnowledgeGraphManager {
     const lines = [
       ...graph.entities.map((e: Entity) => JSON.stringify({ type: "entity", ...e })),
       ...graph.relations.map((r: Relation) => JSON.stringify({ type: "relation", ...r })),
+      ...(graph.types || []).map((t: TypeDefinition) => JSON.stringify({ type: "typeDefinition", ...t })),
     ];
     await fs.writeFile(this.memoryFilePath, lines.join("\n"));
   }
 
   async createEntities(entities: Entity[]): Promise<Entity[]> {
     const graph = await this.loadGraph();
+    
+    // Get all valid entity types
+    const validEntityTypes = new Set(
+      (graph.types || [])
+        .filter(t => t.objectType === "entityType")
+        .map(t => t.name)
+    );
+    
+    // Validate entity types
+    for (const entity of entities) {
+      if (validEntityTypes.size > 0 && !validEntityTypes.has(entity.entityType)) {
+        const availableTypes = Array.from(validEntityTypes).sort();
+        throw new MemoryGraphError(
+          ErrorCode.INVALID_ENTITY_TYPE,
+          `Entity type '${entity.entityType}' not found.`,
+          {
+            availableTypes,
+            suggestion: "Use an existing type or create new type first with mcp_memory-graph_create_type"
+          }
+        );
+      }
+    }
+    
     const newEntities = entities.filter((e: Entity) => !graph.entities.some((existingEntity: Entity) => existingEntity.name === e.name));
     graph.entities.push(...newEntities);
     await this.saveGraph(graph);
@@ -59,6 +87,13 @@ export class KnowledgeGraphManager {
   async createRelations(relations: Relation[]): Promise<Relation[]> {
     const graph = await this.loadGraph();
     const entityNames = new Set(graph.entities.map((e: Entity) => e.name));
+    
+    // Get all valid relation types
+    const validRelationTypes = new Set(
+      (graph.types || [])
+        .filter(t => t.objectType === "relationType")
+        .map(t => t.name)
+    );
     
     // Validate that all referenced entities exist
     for (const relation of relations) {
@@ -72,6 +107,19 @@ export class KnowledgeGraphManager {
         throw new MemoryGraphError(
           ErrorCode.ENTITY_NOT_FOUND,
           `Target entity "${relation.to}" not found`
+        );
+      }
+      
+      // Validate relation types
+      if (validRelationTypes.size > 0 && !validRelationTypes.has(relation.relationType)) {
+        const availableTypes = Array.from(validRelationTypes).sort();
+        throw new MemoryGraphError(
+          ErrorCode.INVALID_RELATION_TYPE,
+          `Relation type '${relation.relationType}' not found.`,
+          {
+            availableTypes,
+            suggestion: "Use an existing type or create new type first with mcp_memory-graph_create_type"
+          }
         );
       }
     }
@@ -397,5 +445,187 @@ export class KnowledgeGraphManager {
     }
 
     return { issues, fixedIssues };
+  }
+
+  async listTypes(sortBy: "alphabetical" | "frequency" = "alphabetical"): Promise<{
+    entityTypes: Array<{ type: string; usageCount: number; description?: string; examples: string[] }>;
+    relationTypes: Array<{ type: string; usageCount: number; description?: string }>;
+  }> {
+    const graph = await this.loadGraph();
+    
+    // Get entity type usage counts
+    const entityTypeUsage = new Map<string, number>();
+    const entityTypeExamples = new Map<string, string[]>();
+    
+    graph.entities.forEach(entity => {
+      const count = entityTypeUsage.get(entity.entityType) || 0;
+      entityTypeUsage.set(entity.entityType, count + 1);
+      
+      const examples = entityTypeExamples.get(entity.entityType) || [];
+      if (examples.length < 2) {
+        examples.push(entity.name);
+        entityTypeExamples.set(entity.entityType, examples);
+      }
+    });
+
+    // Get relation type usage counts
+    const relationTypeUsage = new Map<string, number>();
+    graph.relations.forEach(relation => {
+      const count = relationTypeUsage.get(relation.relationType) || 0;
+      relationTypeUsage.set(relation.relationType, count + 1);
+    });
+
+    // Get type definitions
+    const typeDefinitions = new Map<string, TypeDefinition>();
+    (graph.types || []).forEach(typeDef => {
+      typeDefinitions.set(`${typeDef.objectType}:${typeDef.name}`, typeDef);
+    });
+
+    // Build entity types response
+    const entityTypes = Array.from(entityTypeUsage.entries()).map(([type, usageCount]) => {
+      const typeDef = typeDefinitions.get(`entityType:${type}`);
+      return {
+        type,
+        usageCount,
+        description: typeDef?.description,
+        examples: entityTypeExamples.get(type) || []
+      };
+    });
+
+    // Build relation types response
+    const relationTypes = Array.from(relationTypeUsage.entries()).map(([type, usageCount]) => {
+      const typeDef = typeDefinitions.get(`relationType:${type}`);
+      return {
+        type,
+        usageCount,
+        description: typeDef?.description
+      };
+    });
+
+    // Sort the results
+    const sortFunc = sortBy === "frequency" 
+      ? (a: any, b: any) => b.usageCount - a.usageCount
+      : (a: any, b: any) => a.type.localeCompare(b.type);
+
+    entityTypes.sort(sortFunc);
+    relationTypes.sort(sortFunc);
+
+    return { entityTypes, relationTypes };
+  }
+
+  async createType(
+    typeCategory: "entityType" | "relationType",
+    typeName: string,
+    description?: string,
+    replaceExisting: boolean = false
+  ): Promise<TypeDefinition> {
+    const graph = await this.loadGraph();
+    
+    if (!graph.types) graph.types = [];
+    
+    // Check if type already exists
+    const existingType = graph.types.find(t => t.objectType === typeCategory && t.name === typeName);
+    
+    if (existingType && !replaceExisting) {
+      throw new MemoryGraphError(
+        ErrorCode.TYPE_ALREADY_EXISTS,
+        `${typeCategory} '${typeName}' already exists`
+      );
+    }
+
+    const newType: TypeDefinition = {
+      name: typeName,
+      objectType: typeCategory,
+      description
+    };
+
+    if (existingType && replaceExisting) {
+      // Replace existing type
+      const index = graph.types.indexOf(existingType);
+      graph.types[index] = newType;
+    } else {
+      // Add new type
+      graph.types.push(newType);
+    }
+
+    await this.saveGraph(graph);
+    return newType;
+  }
+
+  async deleteType(
+    typeCategory: "entityType" | "relationType", 
+    typeName: string, 
+    force: boolean = false,
+    replaceWith?: string
+  ): Promise<{ deleted: boolean; replacedUsages?: number }> {
+    const graph = await this.loadGraph();
+    
+    if (!graph.types) graph.types = [];
+    
+    // Find the type to delete
+    const typeIndex = graph.types.findIndex(t => t.objectType === typeCategory && t.name === typeName);
+    if (typeIndex === -1) {
+      throw new MemoryGraphError(
+        ErrorCode.TYPE_NOT_FOUND,
+        `${typeCategory} '${typeName}' not found`
+      );
+    }
+
+    // Check if type is in use
+    let usageCount = 0;
+    if (typeCategory === "entityType") {
+      usageCount = graph.entities.filter(e => e.entityType === typeName).length;
+    } else {
+      usageCount = graph.relations.filter(r => r.relationType === typeName).length;
+    }
+
+    if (usageCount > 0 && !force) {
+      throw new MemoryGraphError(
+        ErrorCode.TYPE_IN_USE,
+        `${typeCategory} '${typeName}' is in use by ${usageCount} ${typeCategory === "entityType" ? "entities" : "relations"}. Use force=true to delete anyway.`
+      );
+    }
+
+    let replacedUsages = 0;
+
+    // Handle replacement or removal of usages
+    if (usageCount > 0) {
+      if (replaceWith) {
+        // Replace usages with new type
+        if (typeCategory === "entityType") {
+          graph.entities.forEach(e => {
+            if (e.entityType === typeName) {
+              e.entityType = replaceWith;
+              replacedUsages++;
+            }
+          });
+        } else {
+          graph.relations.forEach(r => {
+            if (r.relationType === typeName) {
+              r.relationType = replaceWith;
+              replacedUsages++;
+            }
+          });
+        }
+      } else if (force) {
+        // Remove entities/relations using this type
+        if (typeCategory === "entityType") {
+          const entitiesToRemove = graph.entities.filter(e => e.entityType === typeName).map(e => e.name);
+          graph.entities = graph.entities.filter(e => e.entityType !== typeName);
+          // Also remove relations involving deleted entities
+          graph.relations = graph.relations.filter(r => 
+            !entitiesToRemove.includes(r.from) && !entitiesToRemove.includes(r.to)
+          );
+        } else {
+          graph.relations = graph.relations.filter(r => r.relationType !== typeName);
+        }
+      }
+    }
+
+    // Remove the type definition
+    graph.types.splice(typeIndex, 1);
+
+    await this.saveGraph(graph);
+    return { deleted: true, replacedUsages: replaceWith ? replacedUsages : undefined };
   }
 }

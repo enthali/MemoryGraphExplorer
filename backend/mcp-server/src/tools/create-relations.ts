@@ -63,10 +63,17 @@ export async function createRelationsHandler(args: CreateRelationsArgs, knowledg
     };
   } catch (error) {
     if (error instanceof MemoryGraphError) {
+      let errorText = `Error [${error.code}]: ${error.message}`;
+      if (error.code === ErrorCode.INVALID_RELATION_TYPE && error.details?.availableTypes) {
+        errorText += `\nAvailable relation types: [${error.details.availableTypes.join(', ')}]`;
+        if (error.details.suggestion) {
+          errorText += `\n${error.details.suggestion}`;
+        }
+      }
       return {
         content: [{ 
           type: "text", 
-          text: `Error [${error.code}]: ${error.message}` 
+          text: errorText
         }],
         isError: true,
       };

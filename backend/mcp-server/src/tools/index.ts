@@ -12,6 +12,9 @@ import { openNodesHandler } from './open-nodes.js';
 import { getNodeRelationsHandler } from './get-node-relations.js';
 import { renameEntityHandler } from './rename-entity.js';
 import { validateIntegrityHandler } from './validate-integrity.js';
+import { listTypesHandler } from './list-types.js';
+import { createTypeHandler } from './create-type.js';
+import { deleteTypeHandler } from './delete-type.js';
 
 // Export all handlers
 export {
@@ -26,7 +29,10 @@ export {
   openNodesHandler,
   getNodeRelationsHandler,
   renameEntityHandler,
-  validateIntegrityHandler
+  validateIntegrityHandler,
+  listTypesHandler,
+  createTypeHandler,
+  deleteTypeHandler
 };
 
 // Tool definitions for the MCP server
@@ -229,6 +235,74 @@ export const toolDefinitions = [
           description: "Whether to automatically fix detected issues"
         }
       }
+    }
+  },
+  {
+    name: "list_types",
+    description: "List all unique types currently used in the graph",
+    inputSchema: {
+      type: "object",
+      properties: {
+        sortBy: {
+          type: "string",
+          enum: ["alphabetical", "frequency"],
+          description: "Sort order for the types"
+        }
+      }
+    }
+  },
+  {
+    name: "create_type",
+    description: "Explicitly create a new type with optional description",
+    inputSchema: {
+      type: "object",
+      properties: {
+        typeCategory: {
+          type: "string",
+          enum: ["entityType", "relationType"],
+          description: "Which type category to create"
+        },
+        typeName: {
+          type: "string",
+          description: "Name of the new type"
+        },
+        description: {
+          type: "string",
+          description: "Optional description of the type"
+        },
+        replaceExisting: {
+          type: "boolean",
+          description: "Whether to replace existing type if it exists"
+        }
+      },
+      required: ["typeCategory", "typeName"]
+    }
+  },
+  {
+    name: "delete_type",
+    description: "Delete type if not in use, or force delete with warnings",
+    inputSchema: {
+      type: "object",
+      properties: {
+        typeCategory: {
+          type: "string",
+          enum: ["entityType", "relationType"],
+          description: "Which type category to delete from"
+        },
+        typeName: {
+          type: "string",
+          description: "Name of the type to delete"
+        },
+        force: {
+          type: "boolean",
+          description: "Force delete even if type is in use"
+        },
+        replaceWith: {
+          type: "string",
+          description: "Replace deleted type with this type in existing entities/relations"
+        }
+      },
+      required: ["typeCategory", "typeName"]
     }
   }
 ];

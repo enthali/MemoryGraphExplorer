@@ -22,7 +22,10 @@ import {
   openNodesHandler,
   getNodeRelationsHandler,
   renameEntityHandler,
-  validateIntegrityHandler
+  validateIntegrityHandler,
+  listTypesHandler,
+  createTypeHandler,
+  deleteTypeHandler
 } from './src/tools/index.js';
 
 console.error('Starting MCP Streamable HTTP Server...');
@@ -76,6 +79,12 @@ function createMCPServer() {
           return await renameEntityHandler(args as any, knowledgeGraph);
         case "validate_integrity":
           return await validateIntegrityHandler(args as any, knowledgeGraph);
+        case "list_types":
+          return await listTypesHandler(args as any, knowledgeGraph);
+        case "create_type":
+          return await createTypeHandler(args as any, knowledgeGraph);
+        case "delete_type":
+          return await deleteTypeHandler(args as any, knowledgeGraph);
         default:
           throw new Error(`Unknown tool: ${name}`);
       }
