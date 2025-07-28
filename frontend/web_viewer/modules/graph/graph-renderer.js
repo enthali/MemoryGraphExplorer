@@ -3,6 +3,8 @@
  * Handles pure rendering logic without state management
  */
 
+import * as d3 from 'd3';
+
 export class GraphRenderer {
   constructor(containerSelector, options = {}) {
     this.container = d3.select(containerSelector);
