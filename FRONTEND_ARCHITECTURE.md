@@ -81,7 +81,7 @@ frontend/web_viewer/
 The graph center is determined dynamically using a flexible observation-based system:
 
 1. **Priority Order**:
-   - Entity with observation `"rootEntity": true` (highest priority)
+   - Entity with observation `"rootEntity: true"` (highest priority)
    - First entity in the dataset (fallback)
 
 2. **User Control**:
@@ -114,19 +114,24 @@ The graph center is determined dynamically using a flexible observation-based sy
 ### Central State Structure
 ```javascript
 {
-  // Data State - Only filtered data loaded from server
-  currentData: { entities: [], relations: [] },
+  // Data State - Complete dataset from MCP server
+  rawData: { 
+    entities: [], 
+    relations: [],
+    types: { entityTypes: [], relationTypes: [] }
+  },
+  filteredData: { entities: [], relations: [] }, // Client-side filtered subset for visualization (ALWAYS populated)
   
   // Graph State
   centerEntity: null, // Determined dynamically: rootEntity observation > first entity
   selectedEntity: null,
   rootEntity: null, // Entity with "rootEntity: true" observation, or first entity as fallback
   
-  // Filter State
+  // Filter State (for visualization filtering)
   selectedEntityTypes: ['person', 'project'], 
-  availableEntityTypes: ['person', 'project', 'company'], // Loaded once, cached
+  availableEntityTypes: ['person', 'project', 'company'], // From MCP list-types
   selectedRelationTypes: ['works_at', 'collaborates_with'],
-  availableRelationTypes: ['works_at', 'collaborates_with', 'manages', 'reports_to'], // Loaded once, cached
+  availableRelationTypes: ['works_at', 'collaborates_with', 'manages', 'reports_to'], // From MCP list-types
   
   // Search State
   searchQuery: '',
@@ -157,11 +162,9 @@ Feature Manager (search/filter/etc)
     ↓
 State Manager (updates filter state)
     ↓
-Data Manager (immediate server calls for filtered data)
+Data Manager (applies client-side filtering to complete dataset)
     ↓
-MCP Server (returns only matching entities/relations)
-    ↓
-Event Bus (data-loaded event)
+Event Bus (filtered-data event)
     ↓
 Graph Controller (manages graph state)
     ↓
@@ -185,12 +188,13 @@ class StateManager {
 #### `data-manager.js`
 ```javascript
 class DataManager {
-  // Server-side data loading with type-based filtering
-  // loadFilteredData(entityTypes, relationTypes) -> calls MCP server immediately
-  // Simple, direct server calls - no debouncing or caching initially
-  // Type metadata loading (availableEntityTypes, availableRelationTypes)
+  // Complete data loading from MCP server
+  // loadCompleteGraph() -> calls MCP read-graph
+  // loadAvailableTypes() -> calls MCP list-types
+  // Client-side filtering: applyFilters(rawData, entityTypes, relationTypes)
   // findRootEntity() -> searches for entity with "rootEntity: true" observation
-  // READ-ONLY: No data modification, only server-side filtering
+  // ALWAYS generates filteredData (even when no filters applied = all data)
+  // READ-ONLY: No data modification, only loading and client-side filtering
 }
 ```
 
@@ -272,6 +276,8 @@ class GraphController {
   // Node/link interaction handling
   // View state management (zoom, pan)
   // Animation coordination
+  // ALWAYS consumes filteredData (never rawData directly)
+  // When no filters applied: filteredData = complete dataset
 }
 ```
 
@@ -307,19 +313,21 @@ class GraphController {
 ```
 App starts
     ↓
-DataManager loads available entity and relation types (cached)
+DataManager calls MCP read-graph (loads complete dataset)
     ↓
-DataManager loads default filtered data (e.g., all types initially)
+DataManager calls MCP list-types (loads available entity/relation types)
     ↓
 DataManager searches for entity with "rootEntity: true" observation
     ↓
 If found: uses that entity; If not found: uses first entity
     ↓
-StateManager updates centerEntity and rootEntity
+StateManager updates rawData, availableTypes, centerEntity and rootEntity
     ↓
-GraphController centers graph on root entity
+DataManager applies default filters (all types selected initially) → generates filteredData
     ↓
-User sees graph centered on their preferred entity
+GraphController centers graph on root entity using filteredData
+    ↓
+User sees complete graph centered on their preferred entity
 ```
 
 ### Set Root Entity Flow (via MCP/LLM)
@@ -366,13 +374,15 @@ FilterManager updates selectedEntityTypes and selectedRelationTypes
     ↓
 FilterManager emits 'filter-changed' event via EventBus
     ↓
-DataManager receives event, calls MCP server immediately with filter: entityTypes=['person','project'], relationTypes=['works_at','collaborates_with']
+DataManager receives event, applies client-side filtering to rawData
     ↓
-MCP server returns only matching entities and relations
+DataManager filters entities (rawData.entities.filter(e => selectedEntityTypes.includes(e.entityType)))
     ↓
-DataManager emits 'data-loaded' event via EventBus
+DataManager filters relations (rawData.relations.filter(r => selectedRelationTypes.includes(r.relationType)))
     ↓
-GraphController receives event, rebuilds with server-filtered data
+DataManager emits 'filtered-data' event via EventBus with filteredData
+    ↓
+GraphController receives event, rebuilds with client-filtered data
     ↓
 GraphRenderer draws new graph (people + projects, work + collaboration relations only)
 ```
@@ -389,7 +399,7 @@ Search: SearchManager applies visual filter to current graph
     ↓
 GraphRenderer hides non-matching projects (display:none)
     ↓
-Result: Only "WebApp" projects visible, user clicks to center
+Result: Only "WebApp" projects highlighted, user can click to center
 ```
 
 ## Performance Considerations
@@ -450,3 +460,116 @@ This refactoring can be done incrementally:
 2. How granular should the event system be?
 3. Any specific UI improvements you want during refactoring?
 4. Should we add any new features during the refactoring?
+
+## Implementation Reference
+
+### Event Schema Definitions
+
+```javascript
+// Core Events
+'data-loaded': { rawData: {...}, types: {...}, rootEntity: {...} }
+'filtered-data': { filteredData: {...} }
+'filter-changed': { selectedEntityTypes: [...], selectedRelationTypes: [...] }
+'search-changed': { query: string, results: [...] }
+'entity-selected': { entity: {...} }
+'entity-centered': { entity: {...} }
+'zoom-changed': { zoom: number, pan: {x, y} }
+
+// UI Events  
+'info-panel-toggle': { isOpen: boolean }
+'legend-toggle': { isVisible: boolean }
+'loading-state': { isLoading: boolean, message?: string }
+'error-occurred': { error: string }
+```
+
+### MCP Client Interface
+
+```javascript
+// services/mcp-client.js
+class MCPClient {
+  constructor(baseURL = 'http://localhost:3001') {
+    this.baseURL = baseURL;
+  }
+
+  async readGraph() {
+    const response = await fetch(`${this.baseURL}/api/read-graph`);
+    return response.json(); // Returns { entities: [...], relations: [...], types: [...] }
+  }
+
+  async listTypes() {
+    const response = await fetch(`${this.baseURL}/api/list-types`);
+    return response.json(); // Returns { entityTypes: [...], relationTypes: [...] }
+  }
+}
+```
+
+### Data Filtering Implementation
+
+```javascript
+// In DataManager
+applyFilters(rawData, selectedEntityTypes, selectedRelationTypes) {
+  const filteredEntities = rawData.entities.filter(entity => 
+    selectedEntityTypes.includes(entity.entityType)
+  );
+  
+  const filteredRelations = rawData.relations.filter(relation => {
+    const hasValidRelationType = selectedRelationTypes.includes(relation.relationType);
+    const hasValidEntities = filteredEntities.some(e => e.name === relation.from) && 
+                            filteredEntities.some(e => e.name === relation.to);
+    return hasValidRelationType && hasValidEntities;
+  });
+
+  return { entities: filteredEntities, relations: filteredRelations };
+}
+```
+
+### Search Implementation
+
+```javascript
+// In SearchManager
+searchEntities(query, entities) {
+  if (!query.trim()) return entities;
+  
+  const lowerQuery = query.toLowerCase();
+  return entities.filter(entity => {
+    // Search in name
+    if (entity.name.toLowerCase().includes(lowerQuery)) return true;
+    
+    // Search in observations
+    return entity.observations.some(obs => 
+      obs.toLowerCase().includes(lowerQuery)
+    );
+  });
+}
+```
+
+### File Creation Order for Implementation
+
+1. **Core Infrastructure** (Week 1):
+   ```
+   modules/core/event-bus.js          # Event system foundation
+   modules/core/state-manager.js      # State management
+   modules/services/mcp-client.js     # API communication
+   modules/core/data-manager.js       # Data loading & filtering
+   ```
+
+2. **Basic UI** (Week 1-2):
+   ```
+   modules/features/filter-manager.js # Filter controls
+   modules/features/search-manager.js # Search functionality
+   modules/core/app-controller.js     # Coordination
+   ```
+
+3. **Graph Rendering** (Week 2-3):
+   ```
+   modules/graph/graph-controller.js  # Graph coordination
+   modules/graph/graph-renderer.js    # D3.js rendering
+   modules/graph/graph-interactions.js # User interactions
+   ```
+
+4. **Polish & Features** (Week 3-4):
+   ```
+   modules/features/info-panel.js     # Entity details
+   modules/features/legend.js         # Type legend
+   modules/services/color-service.js  # Color management
+   ```
