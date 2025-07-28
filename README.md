@@ -17,43 +17,34 @@ A modern, containerized knowledge graph visualization and management system with
 
 **Unified StreamableHTTP MCP Architecture:**
 
-``` text
+```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    AI Clients (MCP Protocol)                    │
-├─────────────────┬─────────────────┬─────────────────┬───────────┤
-│  Graph Explorer │ GitHub Copilot  │ Claude Desktop  │    ...    │
-│      (Web)      │  (Agent Mode)   │     (Chat)      │           │
-└─────────────────┼─────────────────┼─────────────────┼───────────┘
-                  │                 │                 │
-                  ▼                 ▼                 ▼
+├─────────────────┬─────────────────┬─────────────────────────────┤
+│  Graph Explorer │ GitHub Copilot  │        Future Clients       │
+│      (Web)      │  (VS Code)      │     (Claude, etc.)          │
+└─────────────────┼─────────────────┼─────────────────────────────┘
+                  │                 │
+                  ▼                 ▼
      ┌───────────────────────────────────────────────────────┐
-     │              MCP Protocol Interface                   │
-     └─────────────────────┬─────────────────────────────────┘
-                           ▼
-     ┌───────────────────────────────────────────────────────┐
-     │                Memory Tool Service                    │
+     │           StreamableHTTP MCP Server                   │
      │  ┌─────────────────────────────────────────────────┐  │
-     │  │           MCP Server Layer                      │  │
-     │  │     (get_node_relations, create_entities...)    │  │
+     │  │        Express.js HTTP Transport                │  │
      │  └─────────────────┬───────────────────────────────┘  │
      │                    ▼                                  │
      │  ┌─────────────────────────────────────────────────┐  │
-     │  │        Business Logic Layer                     │  │
-     │  │  • Consistency validation                       │  │
-     │  │  • Graph algorithms                             │  │
-     │  │  • Complex queries                              │  │
-     │  │  • Data integrity rules                         │  │
+     │  │        Modular Memory Tools                     │  │
+     │  │  • create_entities  • read_graph                │  │
+     │  │  • search_nodes     • get_node_relations        │  │
+     │  │  • add_observations • delete_entities           │  │
      │  └─────────────────┬───────────────────────────────┘  │
      │                    ▼                                  │
      │  ┌─────────────────────────────────────────────────┐  │
-     │  │         Database Layer                          │  │
-     │  │  • PostgreSQL / MongoDB / SQLite                │  │
-     │  │  • Optimized graph queries                      │  │
-     │  │  • ACID transactions                            │  │
-     │  │  • Indexing & performance                       │  │
+     │  │        KnowledgeGraphManager                    │  │
+     │  │          JSON Storage Engine                    │  │
      │  └─────────────────────────────────────────────────┘  │
      └───────────────────────────────────────────────────────┘
-                   ▲ (All containerized)
+                   ▲ (Containerized with Docker)
 ```
 
 **Key Benefits:**
@@ -118,11 +109,6 @@ That's it! 🎉
 - `delete_entities` - Remove entities
 - `delete_relations` - Remove relationships
 - `delete_observations` - Remove observations
-- `rename_entity` - Rename entities and update relations
-- `validate_integrity` - Check and fix graph integrity
-- `list_types` - List all entity and relation types
-- `create_type` - Create new entity or relation types
-- `delete_type` - Remove entity or relation types
 
 ### Example Copilot Usage:
 - "Show me all entities related to Github"
@@ -177,7 +163,7 @@ MemoryGraphExplorer/
 │   │   ├── index.html         # Web interface
 │   │   ├── main.js            # Frontend JavaScript
 │   │   └── styles.css         # Styling
-│   └── Dockerfile             # Web server container
+│   └── Dockerfile.http        # Web server container
 ├── docker-compose.yml         # Complete orchestration
 ├── mcp.json                   # VS Code MCP configuration
 └── README.md                  # This file
@@ -251,7 +237,7 @@ curl -X POST http://localhost:3001/mcp \
 
 - Open VS Code in this directory
 - Ask Copilot: "Show me the current knowledge graph"
-- All 15 memory tools should be available
+- All 10 memory tools should be available
 
 **Test Coverage:**
 

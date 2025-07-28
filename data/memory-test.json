@@ -1,4 +1,6 @@
-{"type":"entity","entityType":"Person","name":"Alice Johnson","observations":["Software engineer with expertise in Node.js and TypeScript","Works at Tech Solutions Inc","Interested in MCP protocol development"]}
+{"type":"entity","entityType":"Person","name":"Alice Johnson","observations":["Software engineer with expertise in Node.js and TypeScript","Works at Tech Solutions Inc","Interested in MCP protocol development","rootEntity: true"]}
+{"type":"entity","entityType":"Person","name":"John Doe","observations":["Senior developer at Tech Solutions Inc","Specializes in cloud computing and microservices","Contributed to MCP protocol implementation"]}
+{"type":"entity","entityType":"Person","name":"Jane Smith","observations":["Data scientist at Tech Solutions Inc","Focus on machine learning and AI applications","Involved in knowledge graph projects"]}
 {"type":"entity","entityType":"Company","name":"Tech Solutions Inc","observations":["Technology consulting company","Specializes in enterprise software solutions","Based in Seattle, Washington"]}
 {"type":"entity","entityType":"Project","name":"MCP Integration Project","observations":["Project to integrate Model Context Protocol","Started in Q2 2025","Focus on memory graph capabilities"]}
 {"type":"entity","entityType":"Person","name":"Bob Smith","observations":["Project manager at Tech Solutions Inc","Oversees MCP Integration Project","5 years experience in software project management"]}

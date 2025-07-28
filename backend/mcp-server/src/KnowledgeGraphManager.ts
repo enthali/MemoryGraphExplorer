@@ -65,7 +65,7 @@ export class KnowledgeGraphManager {
     
     // Validate entity types
     for (const entity of entities) {
-      if (!validEntityTypes.has(entity.entityType)) {
+      if (validEntityTypes.size > 0 && !validEntityTypes.has(entity.entityType)) {
         const availableTypes = Array.from(validEntityTypes).sort();
         throw new MemoryGraphError(
           ErrorCode.INVALID_ENTITY_TYPE,
@@ -111,7 +111,7 @@ export class KnowledgeGraphManager {
       }
       
       // Validate relation types
-      if (!validRelationTypes.has(relation.relationType)) {
+      if (validRelationTypes.size > 0 && !validRelationTypes.has(relation.relationType)) {
         const availableTypes = Array.from(validRelationTypes).sort();
         throw new MemoryGraphError(
           ErrorCode.INVALID_RELATION_TYPE,
