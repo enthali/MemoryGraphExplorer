@@ -5,9 +5,11 @@
 
 import { eventBus } from '../core/event-bus.js';
 import { stateManager } from '../core/state-manager.js';
+import { colorService } from '../services/color-service.js';
 
 export class FilterManager {
   constructor() {
+    this.currentColorMap = new Map();
     this.setupEventListeners();
     this.setupUI();
     console.log('🔽 Filter Manager initialized');
@@ -21,6 +23,11 @@ export class FilterManager {
     eventBus.on('data-loaded', (data) => {
       this.renderEntityTypeFilters();
       this.renderRelationTypeFilters();
+    });
+
+    // Listen for color map updates
+    eventBus.on('color-map-updated', (data) => {
+      this.handleColorMapUpdate(data);
     });
 
     // Listen for state changes to update UI
@@ -295,21 +302,27 @@ export class FilterManager {
   }
 
   /**
-   * Get color dot for entity type (placeholder for future color service integration)
+   * Handle color map updates from ColorService
+   * @param {Object} data - Color map update data
+   */
+  handleColorMapUpdate(data) {
+    console.log('🔽 Filter Manager: Handling color map update', data);
+    
+    // Store the color map for filter rendering
+    this.currentColorMap = data.colorMap;
+    
+    // Re-render entity type filters with new colors
+    this.renderEntityTypeFilters();
+  }
+
+  /**
+   * Get color dot for entity type using ColorService colors
    */
   getEntityTypeColorDot(entityType) {
-    // For now, use a simple color scheme
-    const colors = {
-      'person': '#3b82f6',
-      'project': '#10b981', 
-      'company': '#f59e0b',
-      'technology': '#8b5cf6',
-      'skill': '#06b6d4'
-    };
+    // Use color from ColorService if available, otherwise fallback
+    const color = this.currentColorMap[entityType] || colorService.getEntityTypeColor(entityType) || '#6b7280';
     
-    const color = colors[entityType.toLowerCase()] || '#6b7280';
-    
-    return `<span class="color-dot" style="background:${color};display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;"></span>`;
+    return `<span class="color-dot" style="background:${color};"></span>`;
   }
 
   /**

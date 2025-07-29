@@ -55,6 +55,11 @@ export class GraphController {
     eventBus.on('view-reset', () => {
       this.resetView();
     });
+
+    // Listen for color map updates
+    eventBus.on('color-map-updated', (data) => {
+      this.handleColorMapUpdate(data);
+    });
   }
 
   /**
@@ -331,6 +336,22 @@ export class GraphController {
       zoom: state.zoom,
       pan: state.pan
     };
+  }
+
+  /**
+   * Handle color map updates from ColorService
+   * @param {Object} data - Color map update data
+   */
+  handleColorMapUpdate(data) {
+    console.log('📊 Graph Controller: Handling color map update', data);
+    
+    if (!this.graphRenderer) {
+      console.warn('📊 No graph renderer available for color update');
+      return;
+    }
+
+    // Update the renderer's color map
+    this.graphRenderer.updateColorMap(data.colorMap);
   }
 
   /**

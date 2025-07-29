@@ -8,23 +8,23 @@ import { stateManager } from '../core/state-manager.js';
 
 export class ColorService {
   constructor() {
+    // Use the same color palette as the original colorPalette.js
     this.colorPalette = [
-      '#3b82f6', // Blue
-      '#10b981', // Green
-      '#f59e0b', // Amber
-      '#8b5cf6', // Purple
-      '#06b6d4', // Cyan
-      '#ef4444', // Red
-      '#84cc16', // Lime
-      '#f97316', // Orange
-      '#ec4899', // Pink
-      '#6366f1', // Indigo
-      '#14b8a6', // Teal
-      '#a855f7', // Violet
-      '#22c55e', // Emerald
-      '#eab308', // Yellow
-      '#dc2626', // Red (darker)
-      '#059669'  // Green (darker)
+      '#4285f4', // blue
+      '#10b981', // green
+      '#f59e0b', // orange
+      '#8b5cf6', // purple
+      '#ef4444', // red
+      '#22d3ee', // cyan
+      '#f472b6', // pink
+      '#f43f5e', // rose
+      '#6366f1', // indigo
+      '#a3e635', // lime
+      '#eab308', // yellow
+      '#a21caf', // violet
+      '#f97316', // amber
+      '#14b8a6', // teal
+      '#e11d48', // crimson
     ];
 
     this.entityTypeColorMap = new Map();

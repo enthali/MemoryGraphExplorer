@@ -3,7 +3,8 @@
  * Handles pure rendering logic without state management
  */
 
-import * as d3 from 'd3';
+// D3.js is loaded globally via CDN, so we use the global d3 object
+// No import needed - d3 is available as a global variable
 
 export class GraphRenderer {
   constructor(containerSelector, options = {}) {
