@@ -1,6 +1,6 @@
 # Memory Graph Explorer
 
-A modern, containerized knowledge graph visualization and management system with unified StreamableHTTP MCP architecture.
+A modern, containerized knowledge graph visualization and management system with hybrid protocol architecture optimized for both web browsers and AI clients.
 
 ## ✨ Features
 
@@ -15,47 +15,53 @@ A modern, containerized knowledge graph visualization and management system with
 
 ## 🏗️ Architecture
 
-**Unified StreamableHTTP MCP Architecture:**
+**Hybrid Protocol Architecture:**
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    AI Clients (MCP Protocol)                    │
+│                  Frontend - Client Layer                        │
 ├─────────────────┬─────────────────┬─────────────────────────────┤
-│  Graph Explorer │ GitHub Copilot  │        Future Clients       │
-│      (Web)      │  (VS Code)      │     (Claude, etc.)          │
-└─────────────────┼─────────────────┼─────────────────────────────┘
-                  │                 │
-                  ▼                 ▼
-     ┌───────────────────────────────────────────────────────┐
-     │           StreamableHTTP MCP Server                   │
-     │  ┌─────────────────────────────────────────────────┐  │
-     │  │        Express.js HTTP Transport                │  │
-     │  └─────────────────┬───────────────────────────────┘  │
-     │                    ▼                                  │
-     │  ┌─────────────────────────────────────────────────┐  │
-     │  │        Modular Memory Tools                     │  │
-     │  │  • create_entities  • read_graph                │  │
-     │  │  • search_nodes     • get_node_relations        │  │
-     │  │  • add_observations • delete_entities           │  │
-     │  └─────────────────┬───────────────────────────────┘  │
-     │                    ▼                                  │
-     │  ┌─────────────────────────────────────────────────┐  │
-     │  │        KnowledgeGraphManager                    │  │
-     │  │          JSON Storage Engine                    │  │
-     │  └─────────────────────────────────────────────────┘  │
-     └───────────────────────────────────────────────────────┘
-                   ▲ (Containerized with Docker)
+│  Web Browser    │ GitHub Copilot  │   Future AI Clients         │
+│  (HTTP/REST)    │     (MCP)       │        (MCP)                │
+│                 │                 │                             │
+│  Web Server     │                 │                             │
+│  (MCP)          │                 │                             │
+└─────────────────┴─────────────────┴─────────────────────────────┘
+                              │
+                              │
+                    MCP (StreamableHTTP)
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                 Backend - MCP Server                            │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                Memory Tools                             │    │
+│  │  • create_entities    • read_graph                      │    │
+│  │  • create_relations   • search_nodes                    │    │
+│  │  • add_observations   • get_relations                   │    │
+│  │  • delete_entities    • open_nodes                      │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                            │                                    │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │            KnowledgeGraphManager                        │    │
+│  │                 JSON Storage                            │    │
+│  └─────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**Key Benefits:**
-- 🔄 **Unified HTTP Transport** - Single protocol for all clients
+## Key Benefits
+
+- 🌐 **Hybrid Protocol Design** - HTTP/REST for browsers, MCP for AI clients
+- 🔒 **Same-Origin Policy** - Web assets and API from single endpoint
 - 🏗️ **Modular Architecture** - Clean separation of concerns
 - 📦 **Container-First** - Production-ready deployment
-- 🤖 **Multi-Client Support** - Web UI + GitHub Copilot + more
+- ☁️ **Cloud-Ready** - Designed for Azure deployment without CORS issues
+- 🤖 **Multi-Client Support** - Optimized protocols for each client type
 
 ## 🚀 Quick Start
 
-### The Only Step You Need:
+### The Only Step You Need
 
 ```bash
 docker-compose up
@@ -64,20 +70,21 @@ docker-compose up
 That's it! 🎉
 
 **What this starts:**
+
 - 🔧 **MCP Server** on port 3001 (StreamableHTTP)
-- 🌐 **Web Interface** on port 8080 
+- 🌐 **Web Interface** on port 8080
 - 📊 **Knowledge Graph** loaded from your data
 - 🤖 **GitHub Copilot** ready to connect
 
-### Access Your System:
+### Access Your System
 
-- **Web Interface:** http://localhost:8080
+- **Web Interface:** <http://localhost:8080>
 - **GitHub Copilot:** Configure VS Code with the MCP server at `http://localhost:3001/mcp` (see setup below)
-- **Health Check:** http://localhost:8080/api/health
+- **Health Check:** <http://localhost:8080/api/health>
 
 ## 🤖 GitHub Copilot Integration
 
-### Setup Instructions:
+### Setup Instructions
 
 1. **Start the system:** `docker-compose up`
 2. **Configure VS Code:** Add this to your workspace settings (`.vscode/settings.json` or workspace file):
@@ -98,7 +105,8 @@ That's it! 🎉
 
 3. **Use GitHub Copilot:** Start asking questions about your knowledge graph!
 
-### Available Memory Tools:
+### Available Memory Tools
+
 - `create_entities` - Create new entities with observations
 - `create_relations` - Link entities with relationships  
 - `add_observations` - Add observations to existing entities
@@ -110,24 +118,15 @@ That's it! 🎉
 - `delete_relations` - Remove relationships
 - `delete_observations` - Remove observations
 
-### Example Copilot Usage:
+### Example Copilot Usage
+
 - "Show me all entities related to Github"
-- "Create a new entity for John Doe with email john@example.com" 
+- "Create a new entity for John Doe with email john@example.com"
 - "What connections does John Doe have?"
 - "Search for automotive companies in my knowledge graph"
 - "Add an observation to the John doe entity that he works at Microsoft"
 
 **💡 Pro Tip:** The MCP server is automatically ready after `docker-compose up` - no additional setup needed!
-
-## 📡 API Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/graph` | Full knowledge graph data |
-| `GET /api/search?q=query` | Search nodes by query |
-| `GET /api/entity?name=EntityName` | Get specific entity details |
-| `GET /api/node-relations?name=EntityName` | Get all relations for a node |
-| `GET /api/health` | Health check and system status |
 
 ## 🛠️ Development
 
@@ -199,68 +198,14 @@ services:
       - "8080:8080"  # Change first port for different host port
 ```
 
-## 🧪 Testing
+## 📚 Documentation
 
-**Run All Tests:**
+For comprehensive documentation, see the **[docs/](docs/)** directory:
 
-```bash
-# Single command to run complete test suite
-node tests/run-tests.js
-```
-
-**Individual Tests:**
-
-```bash
-# Comprehensive API endpoint tests
-node tests/test-api-endpoints.js
-
-# MCP StreamableHTTP transport tests
-node tests/test-mcp-http.js
-
-# UI screenshot tests (requires Playwright)
-npx playwright test tests/test-screenshot.spec.js
-```
-
-**Manual Health Checks:**
-
-```bash
-# Quick health check
-curl http://localhost:8080/api/health
-
-# Test MCP connection
-curl -X POST http://localhost:3001/mcp \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
-```
-
-**GitHub Copilot Test:**
-
-- Open VS Code in this directory
-- Ask Copilot: "Show me the current knowledge graph"
-- All 10 memory tools should be available
-
-**Test Coverage:**
-
-- ✅ **API Endpoints** - All web interface APIs (`/api/graph`, `/api/search`, etc.)
-- ✅ **MCP Protocol** - StreamableHTTP transport and tool calls
-- ✅ **UI Functionality** - Visual regression and interaction testing
-- ✅ **Error Handling** - Invalid requests and edge cases
-
-## 🔄 MCP Protocol
-
-This implementation follows the **Model Context Protocol (MCP)** standard with StreamableHTTP transport:
-
-- **Transport:** HTTP with Server-Sent Events (SSE)
-- **Protocol:** JSON-RPC 2.0 over HTTP
-- **Session Management:** HTTP headers and session IDs
-- **Standard Tools:** Full compatibility with MCP memory tool interface
-
-**Key Advantages:**
-
-- 🌐 **HTTP-Based** - Web-friendly, firewall-friendly
-- 📡 **Real-time** - Server-Sent Events for live updates  
-- 🔒 **Session Management** - Proper client isolation
-- 🚀 **Performance** - Direct HTTP, no stdio overhead
+- **[System Architecture](docs/design/system-architecture.md)** - Detailed hybrid protocol architecture
+- **[Frontend Architecture](docs/design/frontend-architecture.md)** - Web interface design patterns  
+- **[Testing Strategy](docs/design/testing-strategy.md)** - Quality assurance approach
+- **[Project Roadmap](docs/requirements/roadmap.md)** - Future enhancements and timeline
 
 ## 📝 About
 
@@ -276,3 +221,7 @@ Memory Graph Explorer is a production-ready, containerized knowledge graph syste
 ---
 
 **Built with Express.js, Flask, MCP StreamableHTTP, and Docker** 🚀
+
+## 🙏 Acknowledgments
+
+This project is inspired by the [MCP Memory Server](https://github.com/modelcontextprotocol/servers/tree/main/src/memory) from the Model Context Protocol project. This project extends the concept with a hybrid architecture and web visualization capabilities.
