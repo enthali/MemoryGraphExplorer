@@ -43,6 +43,37 @@ The Memory Graph Explorer is **fully operational** with:
 MCPServer → MemoryService → JSONDataAdapter → memory.json
 ```
 
+### Phase 1.5: Relation Observations
+
+**Goal:** Enable observations on relations for richer relationship context and type consolidation
+
+**Use Case:** Replace specific relation types with generic types + detailed observations
+```json
+// Instead of: "CEO_of", "Senior_Account_Manager_at", "Developer_at"
+// Use: "employed_by" + observations: ["CEO"], ["Senior Account Manager"], ["Developer"]
+```
+
+**Tasks:**
+- [ ] Extend TypeScript `Relation` interface with optional `observations?: string[]`
+- [ ] Create `add_observations_to_relations` MCP tool
+- [ ] Create `delete_observations_from_relations` MCP tool  
+- [ ] Extend `search_nodes` to include relation observations
+- [ ] Update KnowledgeGraphManager for relation observation management
+- [ ] Test with GitHub Copilot integration
+
+**Success Criteria:**
+- Optional observations on relations (backward compatible)
+- No data migration required for existing 400+ relations
+- Relation type consolidation possible (e.g. multiple "employed_by" with different observation details)
+- Search functionality includes relation observations
+- GitHub Copilot can add/remove relation observations
+
+**Benefits:**
+- Reduces relation type explosion
+- Enables richer relationship context
+- Maintains data consistency with entity observation patterns
+- Facilitates data cleanup and consolidation
+
 ### Phase 2: Database Backend Options
 
 **Goal:** Add database backend options for better performance and features
