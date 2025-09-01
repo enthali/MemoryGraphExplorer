@@ -1,5 +1,7 @@
 # Memory Graph Explorer
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/enthali/MemoryGraphExplorer)
+
 A modern, containerized knowledge graph visualization and management system with hybrid protocol architecture optimized for both web browsers and AI clients.
 
 ## ✨ Features
@@ -206,6 +208,9 @@ For comprehensive documentation, see the **[docs/](docs/)** directory:
 - **[Frontend Architecture](docs/design/frontend-architecture.md)** - Web interface design patterns  
 - **[Testing Strategy](docs/design/testing-strategy.md)** - Quality assurance approach
 - **[Project Roadmap](docs/requirements/roadmap.md)** - Future enhancements and timeline
+
+**External Analysis:**
+- **[DeepWiki Project Analysis](https://deepwiki.com/enthali/MemoryGraphExplorer)** - AI-powered project documentation and Q&A
 
 ## 📝 About
 
