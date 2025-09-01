@@ -56,22 +56,23 @@ export class KnowledgeGraphManager {
   async createEntities(entities: Entity[]): Promise<Entity[]> {
     const graph = await this.loadGraph();
     
-    // Get all valid entity types
-    const validEntityTypes = new Set(
-      (graph.types || [])
-        .filter(t => t.objectType === "entityType")
-        .map(t => t.name)
-    );
+    // Get all valid entity types with their descriptions
+    const availableEntityTypes = (graph.types || [])
+      .filter(t => t.objectType === "entityType");
+    const validEntityTypeNames = new Set(availableEntityTypes.map(t => t.name));
     
     // Validate entity types
     for (const entity of entities) {
-      if (validEntityTypes.size > 0 && !validEntityTypes.has(entity.entityType)) {
-        const availableTypes = Array.from(validEntityTypes).sort();
+      if (validEntityTypeNames.size > 0 && !validEntityTypeNames.has(entity.entityType)) {
+        const availableTypesWithDescriptions = availableEntityTypes
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map(t => t.description ? `'${t.name}' - ${t.description}` : `'${t.name}'`);
+        
         throw new MemoryGraphError(
           ErrorCode.INVALID_ENTITY_TYPE,
           `Entity type '${entity.entityType}' not found.`,
           {
-            availableTypes,
+            availableTypes: availableTypesWithDescriptions,
             suggestion: "Use an existing type or create new type first with mcp_memory-graph_create_type"
           }
         );
@@ -88,12 +89,10 @@ export class KnowledgeGraphManager {
     const graph = await this.loadGraph();
     const entityNames = new Set(graph.entities.map((e: Entity) => e.name));
     
-    // Get all valid relation types
-    const validRelationTypes = new Set(
-      (graph.types || [])
-        .filter(t => t.objectType === "relationType")
-        .map(t => t.name)
-    );
+    // Get all valid relation types with their descriptions
+    const availableRelationTypes = (graph.types || [])
+      .filter(t => t.objectType === "relationType");
+    const validRelationTypeNames = new Set(availableRelationTypes.map(t => t.name));
     
     // Validate that all referenced entities exist
     for (const relation of relations) {
@@ -111,13 +110,16 @@ export class KnowledgeGraphManager {
       }
       
       // Validate relation types
-      if (validRelationTypes.size > 0 && !validRelationTypes.has(relation.relationType)) {
-        const availableTypes = Array.from(validRelationTypes).sort();
+      if (validRelationTypeNames.size > 0 && !validRelationTypeNames.has(relation.relationType)) {
+        const availableTypesWithDescriptions = availableRelationTypes
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map(t => t.description ? `'${t.name}' - ${t.description}` : `'${t.name}'`);
+        
         throw new MemoryGraphError(
           ErrorCode.INVALID_RELATION_TYPE,
           `Relation type '${relation.relationType}' not found.`,
           {
-            availableTypes,
+            availableTypes: availableTypesWithDescriptions,
             suggestion: "Use an existing type or create new type first with mcp_memory-graph_create_type"
           }
         );

@@ -36,7 +36,7 @@ The Memory Graph Explorer is **fully operational** with:
 - Clean separation: MCP Protocol ↔ Business Logic ↔ Data Access
 - Graph explorer no longer breaks on invalid data
 - All existing functionality preserved
-- Error messages when trying to create invalid relations
+- ✅ Error messages when trying to create invalid relations (IMPLEMENTED Sept 2025)
 
 **Architecture Target:**
 ```

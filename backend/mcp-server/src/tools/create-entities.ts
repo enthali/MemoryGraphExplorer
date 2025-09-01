@@ -59,9 +59,12 @@ export async function createEntitiesHandler(args: CreateEntitiesArgs, knowledgeG
     if (error instanceof MemoryGraphError) {
       let errorText = `Error [${error.code}]: ${error.message}`;
       if (error.code === ErrorCode.INVALID_ENTITY_TYPE && error.details?.availableTypes) {
-        errorText += `\nAvailable entity types: [${error.details.availableTypes.join(', ')}]`;
+        errorText += `\n\nAvailable entity types:`;
+        error.details.availableTypes.forEach((type: string) => {
+          errorText += `\n  • ${type}`;
+        });
         if (error.details.suggestion) {
-          errorText += `\n${error.details.suggestion}`;
+          errorText += `\n\n${error.details.suggestion}`;
         }
       }
       return {

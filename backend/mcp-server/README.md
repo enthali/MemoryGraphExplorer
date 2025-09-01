@@ -5,12 +5,15 @@ A basic implementation of persistent memory using a local knowledge graph. This 
 ## Core Concepts
 
 ### Entities
+
 Entities are the primary nodes in the knowledge graph. Each entity has:
+
 - A unique name (identifier)
 - An entity type (e.g., "person", "organization", "event")
 - A list of observations
 
 Example:
+
 ```json
 {
   "name": "John_Smith",
@@ -20,9 +23,11 @@ Example:
 ```
 
 ### Relations
+
 Relations define directed connections between entities. They are always stored in active voice and describe how entities interact or relate to each other.
 
 Example:
+
 ```json
 {
   "from": "John_Smith",
@@ -30,7 +35,9 @@ Example:
   "relationType": "works_at"
 }
 ```
+
 ### Observations
+
 Observations are discrete pieces of information about an entity. They are:
 
 - Stored as strings
@@ -39,6 +46,7 @@ Observations are discrete pieces of information about an entity. They are:
 - Should be atomic (one fact per observation)
 
 Example:
+
 ```json
 {
   "entityName": "John_Smith",
@@ -53,6 +61,7 @@ Example:
 ## API
 
 ### Tools
+
 - **create_entities**
   - Create multiple new entities in the knowledge graph
   - Input: `entities` (array of objects)
@@ -135,7 +144,50 @@ Example:
   - Enables efficient graph traversal without loading entire graph
   - Returns empty arrays if node has no relations
 
-# Usage with Claude Desktop
+## Validation and Error Handling
+
+### Type Validation
+
+The server validates entity and relation types against predefined type definitions. When invalid types are used, helpful error messages are provided:
+
+#### Invalid Entity Type Example
+
+```text
+Error [INVALID_ENTITY_TYPE]: Entity type 'unknownType' not found.
+
+Available entity types:
+  • 'Person' - Individual people in the professional network, including colleagues, clients, partners, and industry contacts
+  • 'Company' - Business organizations, corporations, partnerships, and other commercial entities
+  • 'Project' - Business projects, initiatives, consulting engagements, and development programs
+  • 'Event' - Professional conferences, summits, meetings, and industry gatherings
+
+Use an existing type or create new type first with mcp_memory-graph_create_type
+```
+
+#### Invalid Relation Type Example
+
+```text
+Error [INVALID_RELATION_TYPE]: Relation type 'unknownRelation' not found.
+
+Available relation types:
+  • 'employed by' - Current employment relationship between a person and their employer company
+  • 'works_at' - Employment relationship between a person and a company or organization
+  • 'colleague_of' - Professional colleague working at the same organization or in the same field
+  • 'manages' - Direct supervisory relationship where one person manages another
+
+Use an existing type or create new type first with mcp_memory-graph_create_type
+```
+
+### Error Types
+
+- **INVALID_ENTITY_TYPE**: Entity type not found in predefined types
+- **INVALID_RELATION_TYPE**: Relation type not found in predefined types
+- **ENTITY_NOT_FOUND**: Referenced entity does not exist
+- **VALIDATION_ERROR**: Input validation failures (empty names, invalid arrays, etc.)
+- **SELF_RELATION**: Attempt to create relation from entity to itself
+- **DUPLICATE_RELATION**: Relation already exists between entities
+
+## Usage with Claude Desktop
 
 ### Setup
 
@@ -155,6 +207,7 @@ Add this to your claude_desktop_config.json:
 ```
 
 #### NPX
+
 ```json
 {
   "mcpServers": {
@@ -192,7 +245,7 @@ The server can be configured using the following environment variables:
 
 - `MEMORY_FILE_PATH`: Path to the memory storage JSON file (default: `memory.json` in the server directory)
 
-# VS Code Installation Instructions
+## VS Code Installation Instructions
 
 For quick installation, use one of the one-click installation buttons below:
 
@@ -202,11 +255,11 @@ For quick installation, use one of the one-click installation buttons below:
 
 For manual installation, add the following JSON block to your User Settings (JSON) file in VS Code. You can do this by pressing `Ctrl + Shift + P` and typing `Preferences: Open Settings (JSON)`.
 
-Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace. This will allow you to share the configuration with others. 
+Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace. This will allow you to share the configuration with others.
 
 > Note that the `mcp` key is not needed in the `.vscode/mcp.json` file.
 
-#### NPX
+### VS Code Configuration with NPX
 
 ```json
 {
@@ -224,7 +277,7 @@ Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace
 }
 ```
 
-#### Docker
+### VS Code Configuration with Docker
 
 ```json
 {
@@ -250,9 +303,9 @@ Optionally, you can add it to a file called `.vscode/mcp.json` in your workspace
 
 The prompt for utilizing memory depends on the use case. Changing the prompt will help the model determine the frequency and types of memories created.
 
-Here is an example prompt for chat personalization. You could use this prompt in the "Custom Instructions" field of a [Claude.ai Project](https://www.anthropic.com/news/projects). 
+Here is an example prompt for chat personalization. You could use this prompt in the "Custom Instructions" field of a [Claude.ai Project](https://www.anthropic.com/news/projects).
 
-```
+```text
 Follow these steps for each interaction:
 
 1. User Identification:
