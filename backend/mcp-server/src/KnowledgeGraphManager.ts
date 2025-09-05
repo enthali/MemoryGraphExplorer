@@ -2,13 +2,16 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { Entity, Relation, KnowledgeGraph, TypeDefinition, ErrorCode, MemoryGraphError } from './types/index.js';
+import { StorageLayer } from './storage/index.js';
 
 /**
  * KnowledgeGraphManager handles all operations for the memory graph
  * including loading, saving, and manipulating entities and relations
+ * Now uses ID-based StorageLayer internally while maintaining name-based API
  */
 export class KnowledgeGraphManager {
   private memoryFilePath: string;
+  private storageLayer: StorageLayer;
 
   constructor() {
     // Define memory file path using environment variable with fallback
@@ -20,37 +23,20 @@ export class KnowledgeGraphManager {
         ? process.env.MEMORY_FILE_PATH
         : path.join(path.dirname(fileURLToPath(import.meta.url)), '../../', process.env.MEMORY_FILE_PATH)
       : defaultMemoryPath;
+    
+    this.storageLayer = new StorageLayer(this.memoryFilePath);
   }
 
   private async loadGraph(): Promise<KnowledgeGraph> {
-    try {
-      const data = await fs.readFile(this.memoryFilePath, "utf-8");
-      const lines = data.split("\n").filter((line: string) => line.trim() !== "");
-      return lines.reduce((graph: KnowledgeGraph, line: string) => {
-        const item = JSON.parse(line);
-        if (item.type === "entity") graph.entities.push(item as Entity);
-        if (item.type === "relation") graph.relations.push(item as Relation);
-        if (item.type === "typeDefinition") {
-          if (!graph.types) graph.types = [];
-          graph.types.push(item as TypeDefinition);
-        }
-        return graph;
-      }, { entities: [], relations: [], types: [] });
-    } catch (error) {
-      if (error instanceof Error && 'code' in error && (error as any).code === "ENOENT") {
-        return { entities: [], relations: [], types: [] };
-      }
-      throw error;
-    }
+    await this.storageLayer.initialize();
+    return this.storageLayer.readGraph();
   }
 
   private async saveGraph(graph: KnowledgeGraph): Promise<void> {
-    const lines = [
-      ...graph.entities.map((e: Entity) => JSON.stringify({ type: "entity", ...e })),
-      ...graph.relations.map((r: Relation) => JSON.stringify({ type: "relation", ...r })),
-      ...(graph.types || []).map((t: TypeDefinition) => JSON.stringify({ type: "typeDefinition", ...t })),
-    ];
-    await fs.writeFile(this.memoryFilePath, lines.join("\n"));
+    // This method is now handled internally by StorageLayer
+    // Individual operations are saved automatically
+    // This method kept for compatibility but doesn't need to do anything
+    return Promise.resolve();
   }
 
   async createEntities(entities: Entity[]): Promise<Entity[]> {
@@ -79,10 +65,8 @@ export class KnowledgeGraphManager {
       }
     }
     
-    const newEntities = entities.filter((e: Entity) => !graph.entities.some((existingEntity: Entity) => existingEntity.name === e.name));
-    graph.entities.push(...newEntities);
-    await this.saveGraph(graph);
-    return newEntities;
+    // Use StorageLayer to create entities
+    return this.storageLayer.createEntities(entities);
   }
 
   async createRelations(relations: Relation[]): Promise<Relation[]> {
@@ -126,19 +110,14 @@ export class KnowledgeGraphManager {
       }
     }
     
-    const newRelations = relations.filter((r: Relation) => !graph.relations.some((existingRelation: Relation) =>
-      existingRelation.from === r.from && 
-      existingRelation.to === r.to && 
-      existingRelation.relationType === r.relationType
-    ));
-    graph.relations.push(...newRelations);
-    await this.saveGraph(graph);
-    return newRelations;
+    // Use StorageLayer to create relations
+    return this.storageLayer.createRelations(relations);
   }
 
   async addObservations(observations: { entityName: string; contents: string[] }[]): Promise<{ entityName: string; addedObservations: string[] }[]> {
+    // Validate entities exist first
     const graph = await this.loadGraph();
-    const results = observations.map(o => {
+    observations.forEach(o => {
       const entity = graph.entities.find((e: Entity) => e.name === o.entityName);
       if (!entity) {
         throw new MemoryGraphError(
@@ -146,40 +125,22 @@ export class KnowledgeGraphManager {
           `Entity with name "${o.entityName}" not found`
         );
       }
-      const newObservations = o.contents.filter(content => !entity.observations.includes(content));
-      entity.observations.push(...newObservations);
-      return { entityName: o.entityName, addedObservations: newObservations };
     });
-    await this.saveGraph(graph);
-    return results;
+    
+    // Use StorageLayer to add observations
+    return this.storageLayer.addObservations(observations);
   }
 
   async deleteEntities(entityNames: string[]): Promise<void> {
-    const graph = await this.loadGraph();
-    graph.entities = graph.entities.filter((e: Entity) => !entityNames.includes(e.name));
-    graph.relations = graph.relations.filter((r: Relation) => !entityNames.includes(r.from) && !entityNames.includes(r.to));
-    await this.saveGraph(graph);
+    return this.storageLayer.deleteEntities(entityNames);
   }
 
   async deleteObservations(deletions: { entityName: string; observations: string[] }[]): Promise<void> {
-    const graph = await this.loadGraph();
-    deletions.forEach(d => {
-      const entity = graph.entities.find((e: Entity) => e.name === d.entityName);
-      if (entity) {
-        entity.observations = entity.observations.filter((o: string) => !d.observations.includes(o));
-      }
-    });
-    await this.saveGraph(graph);
+    return this.storageLayer.deleteObservations(deletions);
   }
 
   async deleteRelations(relations: Relation[]): Promise<void> {
-    const graph = await this.loadGraph();
-    graph.relations = graph.relations.filter((r: Relation) => !relations.some((delRelation: Relation) => 
-      r.from === delRelation.from && 
-      r.to === delRelation.to && 
-      r.relationType === delRelation.relationType
-    ));
-    await this.saveGraph(graph);
+    return this.storageLayer.deleteRelations(relations);
   }
 
   async readGraph(): Promise<KnowledgeGraph> {
@@ -288,8 +249,8 @@ export class KnowledgeGraphManager {
     const graph = await this.loadGraph();
     
     // Check if old entity exists
-    const entityIndex = graph.entities.findIndex((e: Entity) => e.name === oldName);
-    if (entityIndex === -1) {
+    const entityExists = graph.entities.find((e: Entity) => e.name === oldName);
+    if (!entityExists) {
       throw new MemoryGraphError(
         ErrorCode.ENTITY_NOT_FOUND,
         `Entity with name "${oldName}" not found`
@@ -305,23 +266,14 @@ export class KnowledgeGraphManager {
       );
     }
     
-    // Rename the entity
-    graph.entities[entityIndex].name = newName;
+    // Count relations that will be updated (for compatibility)
+    const relationsUpdated = graph.relations.filter((r: Relation) => 
+      r.from === oldName || r.to === oldName
+    ).length;
     
-    // Update all relations that reference this entity
-    let relationsUpdated = 0;
-    graph.relations.forEach((r: Relation) => {
-      if (r.from === oldName) {
-        r.from = newName;
-        relationsUpdated++;
-      }
-      if (r.to === oldName) {
-        r.to = newName;
-        relationsUpdated++;
-      }
-    });
+    // Use StorageLayer to rename entity (automatically preserves all relations)
+    await this.storageLayer.renameEntity(oldName, newName);
     
-    await this.saveGraph(graph);
     return { relationsUpdated };
   }
 
@@ -546,12 +498,9 @@ export class KnowledgeGraphManager {
     description?: string,
     replaceExisting: boolean = false
   ): Promise<TypeDefinition> {
+    // Validate existing type
     const graph = await this.loadGraph();
-    
-    if (!graph.types) graph.types = [];
-    
-    // Check if type already exists
-    const existingType = graph.types.find(t => t.objectType === typeCategory && t.name === typeName);
+    const existingType = (graph.types || []).find(t => t.objectType === typeCategory && t.name === typeName);
     
     if (existingType && !replaceExisting) {
       throw new MemoryGraphError(
@@ -559,24 +508,9 @@ export class KnowledgeGraphManager {
         `${typeCategory} '${typeName}' already exists`
       );
     }
-
-    const newType: TypeDefinition = {
-      name: typeName,
-      objectType: typeCategory,
-      description
-    };
-
-    if (existingType && replaceExisting) {
-      // Replace existing type
-      const index = graph.types.indexOf(existingType);
-      graph.types[index] = newType;
-    } else {
-      // Add new type
-      graph.types.push(newType);
-    }
-
-    await this.saveGraph(graph);
-    return newType;
+    
+    // Use StorageLayer to create type
+    return this.storageLayer.createType(typeCategory, typeName, description, replaceExisting);
   }
 
   async deleteType(
@@ -587,11 +521,9 @@ export class KnowledgeGraphManager {
   ): Promise<{ deleted: boolean; replacedUsages?: number }> {
     const graph = await this.loadGraph();
     
-    if (!graph.types) graph.types = [];
-    
     // Find the type to delete
-    const typeIndex = graph.types.findIndex(t => t.objectType === typeCategory && t.name === typeName);
-    if (typeIndex === -1) {
+    const existingType = (graph.types || []).find(t => t.objectType === typeCategory && t.name === typeName);
+    if (!existingType) {
       throw new MemoryGraphError(
         ErrorCode.TYPE_NOT_FOUND,
         `${typeCategory} '${typeName}' not found`
@@ -612,47 +544,20 @@ export class KnowledgeGraphManager {
         `${typeCategory} '${typeName}' is in use by ${usageCount} ${typeCategory === "entityType" ? "entities" : "relations"}. Use force=true to delete anyway.`
       );
     }
-
-    let replacedUsages = 0;
-
-    // Handle replacement or removal of usages
-    if (usageCount > 0) {
-      if (replaceWith) {
-        // Replace usages with new type
-        if (typeCategory === "entityType") {
-          graph.entities.forEach(e => {
-            if (e.entityType === typeName) {
-              e.entityType = replaceWith;
-              replacedUsages++;
-            }
-          });
-        } else {
-          graph.relations.forEach(r => {
-            if (r.relationType === typeName) {
-              r.relationType = replaceWith;
-              replacedUsages++;
-            }
-          });
-        }
-      } else if (force) {
-        // Remove entities/relations using this type
-        if (typeCategory === "entityType") {
-          const entitiesToRemove = graph.entities.filter(e => e.entityType === typeName).map(e => e.name);
-          graph.entities = graph.entities.filter(e => e.entityType !== typeName);
-          // Also remove relations involving deleted entities
-          graph.relations = graph.relations.filter(r => 
-            !entitiesToRemove.includes(r.from) && !entitiesToRemove.includes(r.to)
-          );
-        } else {
-          graph.relations = graph.relations.filter(r => r.relationType !== typeName);
+    
+    // Use StorageLayer to delete type
+    try {
+      return await this.storageLayer.deleteType(typeCategory, typeName, force, replaceWith);
+    } catch (error) {
+      // Convert storage layer errors to MemoryGraphErrors
+      if (error instanceof Error) {
+        if (error.message.includes('not found')) {
+          throw new MemoryGraphError(ErrorCode.TYPE_NOT_FOUND, error.message);
+        } else if (error.message.includes('in use')) {
+          throw new MemoryGraphError(ErrorCode.TYPE_IN_USE, error.message);
         }
       }
+      throw error;
     }
-
-    // Remove the type definition
-    graph.types.splice(typeIndex, 1);
-
-    await this.saveGraph(graph);
-    return { deleted: true, replacedUsages: replaceWith ? replacedUsages : undefined };
   }
 }

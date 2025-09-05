@@ -1,6 +1,7 @@
 {
   "name": "memory-graph-explorer",
   "version": "1.0.0",
+  "type": "module",
   "description": "Memory Graph Explorer with MCP Server",
   "scripts": {
     "start": "docker-compose up",
