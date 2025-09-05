@@ -61,8 +61,9 @@ interface StorageLayer {
   deleteEntity(name: string): void;
   
   // Relation Management  
-  createRelation(from: string, relationType: string, to: string): void;
-  deleteRelation(from: string, relationType: string, to: string): void;
+  createRelation(from: string, relationType: string, to: string): string;  // Returns relation ID
+  deleteRelation(relationId: string): void;                                // Delete by ID
+  updateRelation(relationId: string, newType: string): void;               // Update relation type
   
   // Query Functions
   findEntityById(id: string): Entity | null;
@@ -95,7 +96,8 @@ interface StorageLayer {
 - [ ] Test referential integrity after renames
 
 #### Phase 4: Migration & Cleanup
-- [ ] Create migration script for existing data
+- [ ] Design migration strategy for all item types (entities, relations, types)
+- [ ] Create migration script that assigns continuous IDs to all items
 - [ ] Add comprehensive tests for all scenarios
 - [ ] Update documentation
 
@@ -120,7 +122,11 @@ backend/mcp-server/src/
 #### Internal Storage (with IDs)
 ```json
 {"type": "entity", "id": "1", "name": "Max Mustermann", "entityType": "Person", "observations": ["..."]}
-{"type": "relation", "from": "1", "to": "2", "relationType": "employedAt"}
+{"type": "entity", "id": "2", "name": "TechCorp", "entityType": "Company", "observations": ["..."]}
+{"type": "relation", "id": "3", "from": "1", "to": "2", "relationType": "employedAt"}
+{"type": "relation", "id": "4", "from": "1", "to": "2", "relationType": "responsibleFor"}
+{"type": "typeDefinition", "id": "5", "name": "Person", "objectType": "entityType"}
+{"type": "typeDefinition", "id": "6", "name": "employedAt", "objectType": "relationType"}
 ```
 
 #### API Output (unchanged for compatibility)
@@ -145,19 +151,23 @@ backend/mcp-server/src/
 - [ ] Frontend displays updated entity names correctly
 - [ ] No breaking changes to external API
 - [ ] Comprehensive test coverage for all scenarios
-- [ ] Migration script successfully converts existing data
+- [ ] Migration script successfully converts existing data to continuous ID format
 
 ### Technical Notes
 
-- Use sequential IDs (1, 2, 3...) instead of UUIDs for simplicity
+- Use sequential IDs (1, 2, 3...) for ALL items (entities, relations, and types)
+- Single ID counter ensures no collisions across different item types
+- IDs are purely internal - never exposed through API
 - Maintain backward compatibility with existing name-based API
 - Implement lazy loading of name mappings for performance
 - Add comprehensive error handling for ID conflicts
+- TypeDefinition IDs are assigned but may not be actively used initially
 
 ### Related Files
 - `docs/design/storage-layer.md` - Detailed architecture specification
 - `backend/mcp-server/src/KnowledgeGraphManager.ts` - Current implementation
 - `data/memory-test.json` - Test data in current format
+- `scripts/migrate-to-ids.js` - Migration script (implemented)
 
 ### Estimated Effort
 **Medium-Large** (2-3 days implementation + testing)
