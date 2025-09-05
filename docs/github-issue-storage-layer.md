@@ -89,17 +89,7 @@ interface StorageLayer {
 - [ ] Convert relation `from`/`to` fields to use IDs internally
 - [ ] Maintain API compatibility by resolving names to IDs
 - [ ] Update all existing MCP tools to use new storage layer
-
-#### Phase 3: Add New Features
-- [ ] Implement `rename_entity` MCP tool
-- [ ] Add entity renaming functionality to frontend
-- [ ] Test referential integrity after renames
-
-#### Phase 4: Migration & Cleanup
-- [ ] Design migration strategy for all item types (entities, relations, types)
-- [ ] Create migration script that assigns continuous IDs to all items
-- [ ] Add comprehensive tests for all scenarios
-- [ ] Update documentation
+- [ ] Ensure all existing functionality works unchanged
 
 ### File Changes Required
 
@@ -146,12 +136,11 @@ backend/mcp-server/src/
 ### Acceptance Criteria
 
 - [ ] All existing MCP tools continue working unchanged
-- [ ] New `rename_entity` tool successfully renames entities
-- [ ] Relations remain intact after entity renames  
-- [ ] Frontend displays updated entity names correctly
 - [ ] No breaking changes to external API
-- [ ] Comprehensive test coverage for all scenarios
+- [ ] Internal storage uses IDs while API remains name-based
 - [ ] Migration script successfully converts existing data to continuous ID format
+- [ ] Comprehensive test coverage for storage layer
+- [ ] Performance is maintained or improved
 
 ### Technical Notes
 
@@ -170,7 +159,9 @@ backend/mcp-server/src/
 - `scripts/migrate-to-ids.js` - Migration script (implemented)
 
 ### Estimated Effort
-**Medium-Large** (2-3 days implementation + testing)
+**Medium** (1-2 days implementation + testing)
+
+Storage layer is purely internal, no frontend changes needed.
 
 ### Labels
 - `enhancement`
