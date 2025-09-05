@@ -1,0 +1,43 @@
+version: '3.8'
+
+# Development docker-compose: runs a dev MCP server (using data/memory-test.json)
+# and a Web Viewer connected to the dev MCP server. Both services can run
+# in parallel with production setups if you use different ports.
+
+name: memorygraphexplorer-dev
+
+services:
+  # MCP Server Backend
+  mcp-server-dev:
+    build:
+      context: backend/mcp-server
+      dockerfile: Dockerfile
+    container_name: mcp-server-dev
+    ports:
+      - "3001:3001"  # Development: MCP server on host port 3001
+    volumes:
+      # Use test data instead of live Journal data
+      - ./data/memory-test.json:/app/data/memory.json
+    environment:
+      - NODE_ENV=development
+      - MEMORY_FILE_PATH=/app/data/memory.json
+      - PORT=3001
+    command: ["node", "dist/index.js"]
+    restart: unless-stopped
+
+  # Memory Graph Explorer (Web UI)
+  memory-graph-explorer-dev:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: memory-graph-explorer-dev
+    ports:
+      - "8081:8080"  # Development: Web UI on host port 8081
+    environment:
+      - FLASK_ENV=development
+      - MCP_SERVER_URL=http://mcp-server-dev:3001/mcp
+    restart: unless-stopped
+    depends_on:
+      - mcp-server-dev
+
+# No separate networks needed for single container setup

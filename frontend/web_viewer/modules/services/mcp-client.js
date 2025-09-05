@@ -4,7 +4,7 @@
  */
 
 export class MCPClient {
-  constructor(baseURL = 'http://localhost:8080/api') {
+  constructor(baseURL = '/api') {
     this.baseURL = baseURL;
     console.log('🔌 MCP Client initialized');
     console.log(`📡 API Base URL: ${this.baseURL}`);

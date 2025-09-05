@@ -1,3 +1,5 @@
+
+name: memorygraphexplorer
 services:
   # MCP Server Backend  
   mcp-server:
@@ -6,14 +8,14 @@ services:
       dockerfile: Dockerfile
     container_name: mcp-server
     ports:
-      - "3001:3001"  # Expose MCP HTTP server
+      - "3000:3000"  # Production: Expose MCP HTTP server on host port 3000
     volumes:
       # Mount the memory.json file from its current location
       - C:/workspace/Journal/memory.json:/app/data/memory.json
     environment:
       - NODE_ENV=production
       - MEMORY_FILE_PATH=/app/data/memory.json
-      - PORT=3001
+      - PORT=3000
     command: ["node", "dist/index.js"]  # Use main HTTP server
     restart: unless-stopped
 
@@ -24,10 +26,10 @@ services:
       dockerfile: frontend/Dockerfile
     container_name: memory-graph-explorer
     ports:
-      - "8080:8080"
+      - "8080:8080"  # Production: Web UI on host port 8080
     environment:
       - FLASK_ENV=production
-      - MCP_SERVER_URL=http://mcp-server:3001/mcp
+      - MCP_SERVER_URL=http://mcp-server:3000/mcp
     restart: unless-stopped
     depends_on:
       - mcp-server

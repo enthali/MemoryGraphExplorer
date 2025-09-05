@@ -22,8 +22,13 @@ WEB_VIEWER_DIR = os.path.dirname(os.path.abspath(__file__))
 class MCPHTTPClient:
     """MCP Client for StreamableHTTP protocol"""
     
-    def __init__(self, base_url: str = "http://localhost:3001/mcp"):
-        self.base_url = base_url
+    def __init__(self, base_url: str = None):
+        # Allow overriding the MCP server URL via environment variable for Docker/Compose
+        env_url = os.environ.get('MCP_SERVER_URL')
+        if env_url:
+            self.base_url = env_url
+        else:
+            self.base_url = base_url or "http://localhost:3001/mcp"
         self.session_id = None
         self.session = requests.Session()
         self.connected = False
