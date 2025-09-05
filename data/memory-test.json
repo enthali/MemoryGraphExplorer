@@ -10,6 +10,7 @@
 {"type":"entity","entityType":"Company","name":"Mustermann GmbH","observations":["Max Mustermann's own company","German limited liability company (GmbH)","Technology consulting firm"]}
 {"type":"entity","entityType":"Project","name":"Web Project","observations":["Software development project","Involves multiple team members","Currently in active development"]}
 {"type":"entity","entityType":"Person","name":"Anna Mustermann","observations":["Project manager at Mustermann GmbH","Manages the Web Project","Works for Max Mustermann's company","Experienced in project coordination"]}
+{"type":"entity","name":"Test Entity Renamed","entityType":"Person","observations":["This is a test entity for rename functionality"]}
 {"type":"relation","from":"Alice Johnson","to":"Tech Solutions Inc","relationType":"employed by"}
 {"type":"relation","from":"Bob Smith","to":"Tech Solutions Inc","relationType":"employed by"}
 {"type":"relation","from":"Alice Johnson","to":"MCP Integration Project","relationType":"works on"}
