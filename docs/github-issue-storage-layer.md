@@ -133,6 +133,28 @@ backend/mcp-server/src/
 4. **Performance**: Faster lookups with ID-based relations
 5. **Production Ready**: Robust system for real-world usage
 
+### Testing & Validation
+
+#### Testing Strategy
+```bash
+# Start test container with test data
+docker-compose -f docker-compose.test.yml up -d
+
+# Run API tests to verify compatibility
+npm test
+
+# Test MCP tools via HTTP endpoint
+curl -X POST http://localhost:3001/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"method": "tools/call", "params": {"name": "create_entities", "arguments": {...}}}'
+```
+
+#### Container-Based Testing
+GitHub Copilot can use the existing Docker setup for end-to-end validation:
+- `docker-compose.test.yml` provides isolated test environment
+- `data/memory-test.json` contains test data in current format
+- `data/memory-test-universal-ids.json` contains test data with IDs (already created)
+
 ### Acceptance Criteria
 
 - [ ] All existing MCP tools continue working unchanged
@@ -141,6 +163,8 @@ backend/mcp-server/src/
 - [ ] Migration script successfully converts existing data to continuous ID format
 - [ ] Comprehensive test coverage for storage layer
 - [ ] Performance is maintained or improved
+- [ ] Container-based testing validates complete system integration
+- [ ] All HTTP API endpoints work with new storage layer
 
 ### Technical Notes
 
