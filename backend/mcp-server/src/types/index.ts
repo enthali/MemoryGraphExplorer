@@ -1,18 +1,21 @@
 // Shared types for the Memory Graph MCP Server
 
 export interface Entity {
+  id?: string;  // Optional for backward compatibility
   name: string;
   entityType: string;
   observations: string[];
 }
 
 export interface Relation {
+  id?: string;  // Optional for backward compatibility
   from: string;
   to: string;
   relationType: string;
 }
 
 export interface TypeDefinition {
+  id?: string;  // Optional for backward compatibility
   name: string;
   objectType: "entityType" | "relationType";
   description?: string;
