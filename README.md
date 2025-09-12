@@ -188,7 +188,7 @@ Your knowledge graph data is stored in `/app/data/memory.json` inside the contai
 services:
   mcp-server:
     ports:
-      - "3001:3001"  # Change first port for different host port
+      - "3000:3000"  # Change first port for different host port
 ```
 
 **Web Interface Port:**
