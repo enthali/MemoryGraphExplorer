@@ -73,7 +73,7 @@ That's it! 🎉
 
 **What this starts:**
 
-- 🔧 **MCP Server** on port 3001 (StreamableHTTP)
+- 🔧 **MCP Server** on port 3000 (StreamableHTTP)
 - 🌐 **Web Interface** on port 8080
 - 📊 **Knowledge Graph** loaded from your data
 - 🤖 **GitHub Copilot** ready to connect
@@ -96,7 +96,7 @@ That's it! 🎉
     "mcp": {
         "servers": {
             "memory-graph": {
-                "url": "http://localhost:3001/mcp",
+                "url": "http://localhost:3000/mcp",
                 "type": "http"
             }
         },
