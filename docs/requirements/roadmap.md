@@ -17,9 +17,84 @@ The Memory Graph Explorer is **fully operational** with:
 
 **Ready for**: Feature extensions and scaling enhancements
 
-## Future Development Phases
+## Future Development 
 
-### Phase 1: Business Logic Layer Separation
+### Deployment as Azure Docker Service
+
+**Goal:** Deploy Memory Graph Explorer as a cost-effective Azure service with single-port architecture and scale-to-zero capabilities for personal/demo use
+
+**Architecture Strategy:**
+- Single port exposure (8080) with internal MCP proxy
+- Scale-to-zero Azure Container Apps for cost optimization  
+- Unified Flask server handling both web interface and MCP protocol
+- GitHub/Microsoft authentication integration
+
+**Tasks:**
+
+**Phase 1: Single-Port Architecture**
+- [ ] Implement MCP proxy endpoint in Flask server (`/mcp` → `localhost:3001/mcp`)
+- [ ] Add StreamableHTTP request forwarding with proper headers
+- [ ] Handle CORS configuration for MCP client access
+- [ ] Test GitHub Copilot connectivity through proxy endpoint
+- [ ] Update container startup script for unified single-container deployment
+- [ ] Validate all 15 MCP tools work through proxy
+
+**Phase 2: Azure Container Apps Configuration**  
+- [ ] Create Azure Container Apps deployment configuration (YAML/Bicep)
+- [ ] Configure scale-to-zero settings (minReplicas: 0, maxReplicas: 1)
+- [ ] Set up single ingress on port 8080 with custom domain
+- [ ] Configure environment variables for Azure deployment
+- [ ] Set up persistent storage for memory.json data
+- [ ] Test cold start performance and scale-to-zero behavior
+
+**Phase 3: Authentication & Security**
+- [ ] Choose authentication method (Azure Easy Auth vs API Key)
+- [ ] Implement GitHub OAuth integration for personal access
+- [ ] Add Microsoft Account authentication as alternative
+- [ ] Secure MCP endpoints with authentication middleware
+- [ ] Configure HTTPS and custom domain (optional)
+- [ ] Test authentication flow with GitHub Copilot
+
+**Phase 4: Cost Optimization & Monitoring**
+- [ ] Implement proper health checks for Container Apps
+- [ ] Configure Azure Monitor and logging
+- [ ] Set up cost alerts and usage monitoring
+- [ ] Document expected costs (~$3-8/month with scale-to-zero)
+- [ ] Create deployment automation (GitHub Actions)
+- [ ] Test full deployment pipeline
+
+**Success Criteria:**
+- Single public URL serves both web interface and MCP protocol
+- Container scales to zero during idle periods (16+ hours daily)
+- GitHub Copilot can access all MCP tools through HTTPS
+- Authentication prevents unauthorized access
+- Monthly costs under $10 for personal usage
+- No functionality regression from local Docker deployment
+
+**Alternative Options Considered:**
+- Azure Container Instances (always-on, higher cost)
+- GitHub Codespaces (free tier, development-focused)
+- Dual-port Container Apps (complex networking)
+
+**Updated mcp.json Target:**
+```json
+{
+  "mcpServers": {
+    "reference": {
+      "transport": {
+        "type": "http",
+        "url": "https://memory-graph-explorer.azurecontainerapps.io/mcp"
+      },
+      "env": {
+        "MEMORY_FILE_PATH": "/app/data/memory.json"
+      }
+    }
+  }
+}
+```
+
+
+###  Business Logic Layer Separation
 
 **Goal:** Separate business logic from MCP protocol interface for better maintainability
 
@@ -43,7 +118,7 @@ The Memory Graph Explorer is **fully operational** with:
 MCPServer → MemoryService → JSONDataAdapter → memory.json
 ```
 
-### Phase 1.5: Relation Observations
+### Relation Observations
 
 **Goal:** Enable observations on relations for richer relationship context and type consolidation
 
@@ -74,7 +149,7 @@ MCPServer → MemoryService → JSONDataAdapter → memory.json
 - Maintains data consistency with entity observation patterns
 - Facilitates data cleanup and consolidation
 
-### Phase 2: Database Backend Options
+### Database Backend Options
 
 **Goal:** Add database backend options for better performance and features
 
@@ -98,7 +173,7 @@ MCPServer → MemoryService → JSONDataAdapter → memory.json
 - Data migration path from JSON
 - All adapters pass the same test suite
 
-### Phase 3: Advanced Features
+### Advanced Features
 
 **Goal:** Enterprise-grade features and advanced analytics
 
@@ -126,11 +201,6 @@ MCPServer → MemoryService → JSONDataAdapter → memory.json
 - **JSON-first:** Start with current format, migrate to databases later
 - **Docker-first:** Containerization before architectural changes
 
-### Database Selection
-- **SQLite:** Best first database upgrade (local, reliable, SQL)
-- **PostgreSQL:** Production choice for complex queries and reliability
-- **Cosmos DB:** Experimentation platform for learning cloud graph databases
-
 ### Quality Focus
 - **Focus on value:** Each phase must improve the tool's usability
 - **No regression:** Tool must work throughout development
@@ -138,4 +208,4 @@ MCPServer → MemoryService → JSONDataAdapter → memory.json
 
 ---
 
-*Last Updated: August 2025*
+*Last Updated: September 2025*
