@@ -19,6 +19,7 @@ class TestRunner {
         this.results = {
             apiEndpoints: null,
             mcpHttp: null,
+            mcpProxy: null,
             ui: null
         };
     }
@@ -83,6 +84,7 @@ class TestRunner {
         // Run core tests
         this.results.apiEndpoints = await this.runTest('test-api-endpoints.js', 'API Endpoints');
         this.results.mcpHttp = await this.runTest('test-mcp-http.js', 'MCP StreamableHTTP');
+        this.results.mcpProxy = await this.runTest('test-mcp-proxy.js', 'MCP Proxy (Phase 1)');
 
         // Check if Playwright is available for UI tests
         const uiTestExists = fs.existsSync(path.join(this.testsDir, 'test-screenshot.spec.js'));
@@ -97,7 +99,8 @@ class TestRunner {
         
         const allTests = [
             ['API Endpoints', this.results.apiEndpoints],
-            ['MCP StreamableHTTP', this.results.mcpHttp]
+            ['MCP StreamableHTTP', this.results.mcpHttp],
+            ['MCP Proxy (Phase 1)', this.results.mcpProxy]
         ];
 
         let passed = 0;
