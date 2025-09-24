@@ -37,3 +37,6 @@ build/
 # Misc
 *.bak
 *.tmp
+
+# Ignore temporary task drafts used when drafting GitHub issues locally
+docs/tasks/

@@ -209,6 +209,13 @@ For comprehensive documentation, see the **[docs/](docs/)** directory:
 - **[Testing Strategy](docs/design/testing-strategy.md)** - Quality assurance approach
 - **[Project Roadmap](docs/requirements/roadmap.md)** - Future enhancements and timeline
 
+Temporary task drafts
+---------------------
+
+The repository may contain temporary issue/task drafts under `docs/tasks/` while issues are being prepared for GitHub. These files are ignored by git by default (see `.gitignore`) so you can draft locally without committing them to the main project history. Once an issue is finalized, create it on GitHub and remove the local draft.
+
+If you prefer to keep reusable templates, consider adding a canonical template under `.github/ISSUE_TEMPLATE/` instead.
+
 **External Analysis:**
 - **[DeepWiki Project Analysis](https://deepwiki.com/enthali/MemoryGraphExplorer)** - AI-powered project documentation and Q&A
 
