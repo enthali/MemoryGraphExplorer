@@ -9,7 +9,7 @@ import json
 import requests
 import os
 import uuid
-from flask import Flask, send_from_directory, jsonify, request, send_file
+from flask import Flask, send_from_directory, jsonify, request, send_file, Response, make_response
 from flask_cors import CORS
 from typing import Dict, List, Any
 
@@ -403,6 +403,67 @@ def health_check():
         }
         return jsonify(health_data), 503
 
+# MCP Proxy Route (Phase 1 Implementation)
+@app.route('/mcp', methods=['GET', 'POST', 'OPTIONS'])
+@app.route('/mcp/<path:subpath>', methods=['GET', 'POST', 'OPTIONS'])
+def mcp_proxy(subpath=''):
+    """
+    Proxy MCP StreamableHTTP requests to internal MCP server
+    Maintains streaming, headers, and MCP protocol compatibility
+    """
+    
+    # Handle CORS preflight for MCP clients
+    if request.method == 'OPTIONS':
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "*")
+        response.headers.add('Access-Control-Allow-Methods', "*")
+        return response
+    
+    # Construct internal MCP server URL
+    internal_url = 'http://localhost:3001/mcp'  # Target legacy dev MCP server port
+    if subpath:
+        internal_url += f'/{subpath}'
+    
+    try:
+        # Forward request with streaming support
+        resp = requests.request(
+            method=request.method,
+            url=internal_url,
+            # Iterate header pairs and drop Host before forwarding
+            headers={k: v for k, v in request.headers.items() if k.lower() != 'host'},
+            data=request.get_data(),
+            params=request.args,
+            stream=True,  # Critical for StreamableHTTP
+            timeout=30
+        )
+        
+        # Handle Authorization header validation if tokens are present
+        auth_header = request.headers.get('Authorization')
+        if auth_header:
+            # For Phase 1, we just pass through the auth header
+            # Future phases can add token validation here
+            print(f"🔐 MCP request with Authorization header detected")
+            
+        # Stream response back to client
+        def generate():
+            for chunk in resp.iter_content(chunk_size=1024):
+                if chunk:
+                    yield chunk
+                    
+        return Response(
+            generate(),
+            status=resp.status_code,
+            headers=dict(resp.headers)
+        )
+        
+    except Exception as e:
+        print(f"❌ MCP proxy error: {e}")
+        return jsonify({
+            "error": f"MCP proxy error: {str(e)}",
+            "internal_url": internal_url
+        }), 500
+
 def run_server(host='localhost', port=8080, debug=False):
     """Run the Flask web server"""
     print(f"🚀 Starting Knowledge Graph Web Server (StreamableHTTP) on http://{host}:{port}")
@@ -416,6 +477,7 @@ def run_server(host='localhost', port=8080, debug=False):
     print(f"   GET /api/entity?name=EntityName - Entity details")
     print(f"   GET /api/node-relations?name=EntityName - Enhanced node relations")
     print(f"   GET /api/health - Health check")
+    print(f"   POST /mcp - MCP proxy to internal server (Phase 1)")
     print(f"🔄 Press Ctrl+C to stop")
     
     try:

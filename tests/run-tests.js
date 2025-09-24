@@ -5,9 +5,13 @@
  * Runs all test suites in the correct order
  */
 
-const { spawn, execSync } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+import { spawn, execSync } from 'child_process';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class TestRunner {
     constructor() {
@@ -118,7 +122,8 @@ class TestRunner {
 }
 
 // Run if called directly
-if (require.main === module) {
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
     const runner = new TestRunner();
     runner.runAllTests().catch(error => {
         console.error('💥 Test runner failed:', error);
@@ -126,4 +131,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = TestRunner;
+export default TestRunner;
