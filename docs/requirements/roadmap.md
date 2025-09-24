@@ -32,7 +32,7 @@ The Memory Graph Explorer is **fully operational** with:
 **Tasks:**
 
 **Phase 1: Single-Port Architecture**
-- [ ] Implement MCP proxy endpoint in Flask server (`/mcp` → `localhost:3001/mcp`)
+- [ ] Implement MCP proxy endpoint in Flask server (`/mcp` → `localhost:3000/mcp`)
 - [ ] Add StreamableHTTP request forwarding with proper headers
 - [ ] Handle CORS configuration for MCP client access
 - [ ] Test GitHub Copilot connectivity through proxy endpoint
