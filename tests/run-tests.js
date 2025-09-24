@@ -5,9 +5,13 @@
  * Runs all test suites in the correct order
  */
 
-const { spawn, execSync } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+import { spawn, execSync } from 'child_process';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class TestRunner {
     constructor() {
@@ -15,6 +19,7 @@ class TestRunner {
         this.results = {
             apiEndpoints: null,
             mcpHttp: null,
+            mcpProxy: null,
             ui: null
         };
     }
@@ -79,6 +84,7 @@ class TestRunner {
         // Run core tests
         this.results.apiEndpoints = await this.runTest('test-api-endpoints.js', 'API Endpoints');
         this.results.mcpHttp = await this.runTest('test-mcp-http.js', 'MCP StreamableHTTP');
+        this.results.mcpProxy = await this.runTest('test-mcp-proxy.js', 'MCP Proxy (Phase 1)');
 
         // Check if Playwright is available for UI tests
         const uiTestExists = fs.existsSync(path.join(this.testsDir, 'test-screenshot.spec.js'));
@@ -93,7 +99,8 @@ class TestRunner {
         
         const allTests = [
             ['API Endpoints', this.results.apiEndpoints],
-            ['MCP StreamableHTTP', this.results.mcpHttp]
+            ['MCP StreamableHTTP', this.results.mcpHttp],
+            ['MCP Proxy (Phase 1)', this.results.mcpProxy]
         ];
 
         let passed = 0;
@@ -118,7 +125,8 @@ class TestRunner {
 }
 
 // Run if called directly
-if (require.main === module) {
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
     const runner = new TestRunner();
     runner.runAllTests().catch(error => {
         console.error('💥 Test runner failed:', error);
@@ -126,4 +134,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = TestRunner;
+export default TestRunner;
