@@ -421,9 +421,13 @@ def mcp_proxy(subpath=''):
         return response
     
     # Construct internal MCP server URL
-    internal_url = 'http://localhost:3001/mcp'  # Target legacy dev MCP server port
+    # Prefer an explicit env override (useful for compose service names),
+    # otherwise fall back to the MCP client base URL (already configured at startup).
+    internal_url = os.environ.get('MCP_PROXY_INTERNAL_URL') or getattr(mcp_client, 'base_url', None) or 'http://localhost:3001/mcp'
+    # Ensure no duplicate slashes and append subpath when provided
+    internal_url = internal_url.rstrip('/')
     if subpath:
-        internal_url += f'/{subpath}'
+        internal_url = f"{internal_url}/{subpath}"
     
     try:
         # Forward request with streaming support
