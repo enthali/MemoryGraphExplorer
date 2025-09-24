@@ -6,7 +6,7 @@ This document outlines the architectural design for deploying Memory Graph Explo
 
 ## Design Goals
 
-- **Cost Optimization**: Scale-to-zero capabilities for personal/demo usage (~$3-8/month)
+- **Cost Optimization**: Scale-to-zero capabilities for personal/demo usage (~$3-5/month)
 - **Development Parity**: Identical local and production environments
 - **Simplified Architecture**: Single external port with internal MCP proxy
 - **Professional Workflow**: GitOps deployment pipeline with GitHub Actions
@@ -104,17 +104,18 @@ def mcp_proxy(subpath=''):
     if subpath:
         internal_url += f'/{subpath}'
     
-    try:
-        # Forward request with streaming support
-        resp = requests.request(
-            method=request.method,
-            url=internal_url,
-            headers={k: v for k, v in request.headers if k != 'Host'},
-            data=request.get_data(),
-            params=request.args,
-            stream=True,  # Critical for StreamableHTTP
-            timeout=30
-        )
+  try:
+    # Forward request with streaming support
+    resp = requests.request(
+      method=request.method,
+      url=internal_url,
+      # Iterate header pairs and drop Host before forwarding
+      headers={k: v for k, v in request.headers.items() if k.lower() != 'host'},
+      data=request.get_data(),
+      params=request.args,
+      stream=True,  # Critical for StreamableHTTP
+      timeout=30
+    )
         
         # Stream response back to client
         def generate():
@@ -162,8 +163,15 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 COPY frontend/web_viewer ./frontend/
 
+
 # Unified startup script
-COPY <<EOF /app/start.sh
+# NOTE: The following demonstrates the recommended pattern. In a real Dockerfile,
+# add a start.sh file to your build context and COPY it into the image.
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+# Example start.sh (add this to your repo and adjust COPY path if needed):
+```
 #!/bin/bash
 # Start MCP server (internal)
 cd /app/backend && node dist/index.js &
@@ -176,15 +184,13 @@ FLASK_PID=$!
 
 # Keep container alive, restart on failure
 wait_and_restart() {
-    wait $MCP_PID $FLASK_PID
-    echo "Process died, restarting container..."
-    exit 1
+  wait $MCP_PID $FLASK_PID
+  echo "Process died, restarting container..."
+  exit 1
 }
 
 wait_and_restart
-EOF
-
-RUN chmod +x /app/start.sh
+```
 
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
@@ -477,26 +483,19 @@ jobs:
 - **Regular Security Reviews**: Conduct regular reviews of the security measures in place to adapt to new threats and vulnerabilities.
 
 
-## Authentication Methods
+## Authentication
 
-### OAuth and Token-Based Authentication
+This deployment uses two complementary authentication mechanisms:
 
-To ensure secure access to the Memory Graph Explorer, both OAuth and token-based authentication are required:
+- OAuth (GitHub) for user-facing web logins. Use standard OAuth authorization code flows for users accessing the web UI and admin features.
+- Token-based authentication for MCP clients and automated services. MCP clients must include a valid token in the Authorization header when connecting to `/mcp`.
 
-- **OAuth**: Utilizes GitHub as the authentication server for web access, allowing users to log in securely.
-- **Token-Based Authentication**: Required for the MCP server, ensuring that all requests to the server are authenticated with a valid token.
+Guidance and best practices:
 
-This dual authentication approach enhances security and provides flexibility for different access scenarios.
-
-## Authentication Methods
-
-### OAuth
-OAuth is used for user authentication, allowing users to securely log in through third-party services such as GitHub. This method is suitable for web applications that require user interaction.
-
-### Token-Based Authentication
-Token-based authentication is essential for MCP clients to securely communicate with the MCP server. This method involves generating a token that clients must include in their requests to authenticate themselves. It ensures that only authorized clients can access the server's resources, providing an additional layer of security.
-
-Both authentication methods can be implemented to cater to different use cases within the Memory Graph Explorer architecture.
+- Store client secrets and production tokens in a server-side secret store (Azure Key Vault, or environment secrets managed by the runtime). Do not store production tokens in editor-level stores such as VS Code secrets.
+- Prefer short-lived tokens and rotate them regularly. For stronger security consider mutual TLS or managed identities for service-to-service auth where applicable.
+- Restrict CORS origins for production to the known web UI domain(s) instead of using a wildcard origin.
+- Ensure the MCP proxy validates Authorization headers and rejects unauthenticated requests before forwarding them to the internal MCP server.
 
 ```yaml
 ingress:
@@ -580,21 +579,11 @@ Production:
 
 *Last Updated: September 24, 2025*
 
-## Authentication Strategy
+## Authentication Strategy (high level)
 
-1. **User Authentication**:
-   - Users are redirected to GitHub for authentication, where they log in and authorize the application.
-
-2. **Authorization Code**:
-   - After successful authentication, GitHub redirects back with an authorization code.
-
-3. **Token Exchange**:
-   - The MCP server exchanges the authorization code for an access token by making a POST request to GitHub's token endpoint.
-
-4. **Access Token Storage**:
-   - The access token is securely stored in VS Code secrets storage for future API requests.
-
-5. **Using the Token**:
-   - The MCP server includes the access token in the Authorization header for subsequent requests to authenticate the user.
+1. User Authentication: users authenticate via GitHub (OAuth authorization code flow) and are redirected back to the application with an authorization code.
+2. Token Exchange: the server performs the code→token exchange server-side and receives an access token (and refresh token if applicable).
+3. Token Storage: store production tokens and client secrets in a secure server-side store (Azure Key Vault or container-managed secrets). Avoid storing production credentials in local/editor stores.
+4. Token Usage: the web server and MCP server include tokens in Authorization headers when calling upstream APIs. The MCP proxy validates incoming client tokens and rejects unauthenticated requests.
 
 *Next Review: Upon Phase 1 completion*
