@@ -63,7 +63,25 @@ A modern, containerized knowledge graph visualization and management system with
 
 ## 🚀 Quick Start
 
-### The Only Step You Need
+### Development Container (Recommended for Development)
+
+For an isolated, consistent development environment:
+
+**GitHub Codespaces:**
+1. Click **Code** → **Codespaces** → **Create codespace on main**
+2. Wait for automatic setup (~3-5 minutes)
+3. Start developing! 🎉
+
+**Local VS Code:**
+1. Install Docker Desktop and VS Code Dev Containers extension
+2. Open repository in VS Code
+3. Press `F1` → **Dev Containers: Reopen in Container**
+4. Wait for automatic setup
+5. Start developing! 🎉
+
+See [`.devcontainer/README.md`](.devcontainer/README.md) for detailed information.
+
+### Direct Docker Deployment (Production/Quick Test)
 
 ```bash
 docker-compose up
