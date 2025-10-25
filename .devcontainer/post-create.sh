@@ -16,7 +16,7 @@ cd ../..
 
 # Install frontend dependencies
 echo "🐍 Installing frontend Python dependencies..."
-pip3 install --user -r requirements.txt
+pip install -r requirements.txt
 
 # Create test data directory if it doesn't exist
 echo "📁 Setting up data directories..."

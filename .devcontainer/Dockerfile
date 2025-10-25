@@ -61,7 +61,9 @@ RUN if [ "$USER_GID" != "1000" ] || [ "$USER_UID" != "1000" ]; then \
         && usermod --uid $USER_UID --gid $USER_GID $CONTAINER_USER \
         && chown -R $USER_UID:$USER_GID /home/$CONTAINER_USER; \
     fi \
-    && echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+    && echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
+    # Give vscode user ownership of the venv
+    && chown -R $CONTAINER_USER:$CONTAINER_USER /opt/venv
 
 # Configure Docker in Docker (for docker-compose support)
 RUN apt-get update && apt-get install -y \
