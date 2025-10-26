@@ -1,0 +1,55 @@
+# Node modules
+node_modules/
+npm-debug.log
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vite/Build output (except dist we need)
+build/
+
+# Logs
+*.log
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.code-workspace
+
+# Test screenshots or output
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (not needed in container)
+docs/
+README*.md
+
+# Development files
+.devcontainer/
+tests/
+*.test.js
+*.spec.js
+
+# Misc
+*.bak
+*.tmp

@@ -1,0 +1,51 @@
+# Consolidated Dockerfile for Azure Deployment
+# Combines MCP Server (Node.js) and Web UI (Python) into a single container
+
+# Start with Python base image (larger, includes more tools)
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install Node.js 22.x
+RUN apt-get update && \
+    apt-get install -y curl gnupg && \
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies for Web UI
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy and build MCP server
+COPY backend/mcp-server/ ./mcp-server/
+WORKDIR /app/mcp-server
+RUN npm install --omit=dev && npm run build
+
+# Copy web viewer files
+WORKDIR /app
+COPY frontend/web_viewer/ ./web_viewer/
+
+# Create data directory for memory.json
+RUN mkdir -p /app/data
+
+# Copy startup script
+COPY docker/start-consolidated.sh /app/start-consolidated.sh
+RUN chmod +x /app/start-consolidated.sh
+
+# Expose ports
+# 3000: MCP Server
+# 8080: Web UI
+EXPOSE 3000 8080
+
+# Environment variables
+ENV NODE_ENV=production
+ENV FLASK_ENV=production
+ENV PYTHONPATH=/app
+ENV MCP_SERVER_PORT=3000
+ENV WEB_UI_PORT=8080
+ENV MEMORY_FILE_PATH=/app/data/memory.json
+
+# Start both services
+CMD ["/app/start-consolidated.sh"]

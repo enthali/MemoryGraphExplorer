@@ -1,0 +1,32 @@
+name: memorygraphexplorer-consolidated
+
+services:
+  memory-graph-explorer:
+    build:
+      context: .
+      dockerfile: Dockerfile.consolidated
+    container_name: memory-graph-explorer-consolidated
+    ports:
+      - "3000:3000"  # MCP Server
+      - "8080:8080"  # Web UI
+    volumes:
+      # Mount memory data file - use environment variable for flexibility
+      # For local: ./data/memory.json:/app/data/memory.json
+      # For Azure: Use Azure Files or Blob Storage mount
+      - ${MEMORY_DATA_PATH:-./data/memory-test.json}:/app/data/memory.json
+    environment:
+      - NODE_ENV=production
+      - FLASK_ENV=production
+      - MEMORY_FILE_PATH=/app/data/memory.json
+      - MCP_SERVER_PORT=3000
+      - WEB_UI_PORT=8080
+      # Azure-specific environment variables (optional)
+      - AZURE_STORAGE_ACCOUNT=${AZURE_STORAGE_ACCOUNT:-}
+      - AZURE_STORAGE_KEY=${AZURE_STORAGE_KEY:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
