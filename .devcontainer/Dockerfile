@@ -39,10 +39,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
 RUN python3 -m venv /opt/venv \
     && /opt/venv/bin/python -m pip install --upgrade pip setuptools wheel \
     && /opt/venv/bin/pip install --no-cache-dir \
-        pytest \
-        black \
-        pylint \
-        flake8 \
+    pytest \
+    black \
+    pylint \
+    flake8 \
     # Make venv binaries available system-wide
     && echo 'export PATH="/opt/venv/bin:$PATH"' > /etc/profile.d/venv-python.sh \
     && chmod +x /etc/profile.d/venv-python.sh
@@ -57,9 +57,9 @@ RUN npm install -g \
 
 # Set up user permissions
 RUN if [ "$USER_GID" != "1000" ] || [ "$USER_UID" != "1000" ]; then \
-        groupmod --gid $USER_GID $CONTAINER_USER \
-        && usermod --uid $USER_UID --gid $USER_GID $CONTAINER_USER \
-        && chown -R $USER_UID:$USER_GID /home/$CONTAINER_USER; \
+    groupmod --gid $USER_GID $CONTAINER_USER \
+    && usermod --uid $USER_UID --gid $USER_GID $CONTAINER_USER \
+    && chown -R $USER_UID:$USER_GID /home/$CONTAINER_USER; \
     fi \
     && echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
     # Give vscode user ownership of the venv
