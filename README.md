@@ -190,6 +190,42 @@ MemoryGraphExplorer/
 
 ## 🔧 Configuration
 
+### API Authentication
+
+**⚠️ Security Notice:** All API endpoints are protected with API Key authentication. You **must** configure authentication before deployment.
+
+**Quick Setup:**
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Generate a strong API key:
+   ```bash
+   openssl rand -hex 32
+   ```
+
+3. Update `.env` with your key:
+   ```bash
+   AUTH_ENABLED=true
+   API_KEYS="your-generated-key:YourName:read,write"
+   ```
+
+4. Use the key in your requests:
+   ```bash
+   curl -H "X-API-Key: your-generated-key" http://localhost:8080/api/health
+   ```
+
+**📖 For detailed authentication documentation, see:** [`docs/design/api-authentication.md`](docs/design/api-authentication.md)
+
+**Key Points:**
+- 🔒 All `/api/*` and `/mcp` endpoints require authentication
+- 🌐 Web UI (static files) remains public
+- 🔑 Use `X-API-Key` header or `Authorization: Bearer` token
+- 🛡️ For production, use Azure Key Vault or Container Apps secrets
+- 🤖 M365 Copilot Studio: Configure API Key (Header) authentication
+
 ### Memory Data Location
 
 Your knowledge graph data is stored in `/app/data/memory.json` inside the container. To use your own data:

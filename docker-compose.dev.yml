@@ -24,9 +24,13 @@ services:
       - WEB_UI_PORT=8080
       - MCP_SERVER_URL=http://localhost:3000/mcp
       - MCP_PROXY_INTERNAL_URL=http://localhost:3000/mcp
+      - AUTH_ENABLED=false
+      # - API_KEYS=dev-key-123:Developer:read,write|admin-key-456:Admin:read,write,admin
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      # Health check disabled when AUTH_ENABLED=false (dev mode)
+      # For production with auth, use: curl -H "X-API-Key: your-key" http://localhost:8080/api/health
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -13,6 +13,9 @@ from flask import Flask, send_from_directory, jsonify, request, send_file, Respo
 from flask_cors import CORS
 from typing import Dict, List, Any
 
+# Import authentication middleware
+from auth import require_auth, require_admin, auth_manager
+
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
@@ -271,6 +274,7 @@ def static_files(filename):
 
 # API routes
 @app.route('/api/graph')
+@require_auth('read')  # Graph data requires read permission
 def get_full_graph():
     """Get the complete knowledge graph"""
     try:
@@ -282,6 +286,7 @@ def get_full_graph():
         return jsonify({'error': f'Failed to load graph data: {str(e)}'}), 500
 
 @app.route('/api/search')
+@require_auth('read')  # Search requires read permission
 def search_graph():
     """Search graph for entities and relations based on query parameter"""
     query = request.args.get('q', '')
@@ -298,8 +303,9 @@ def search_graph():
         return jsonify({'error': f'Failed to search graph: {str(e)}'}), 500
 
 @app.route('/api/entity')
+@require_auth('read')
 def get_entity():
-    """Get details for a specific entity"""
+    """Get details for a specific entity (requires authentication with 'read' permission)"""
     entity_name = request.args.get('name', '')
     
     if not entity_name:
@@ -331,8 +337,9 @@ def get_entity():
         return jsonify({'error': f'Failed to get entity details: {str(e)}'}), 500
 
 @app.route('/api/node-relations')
+@require_auth('read')
 def get_node_relations():
-    """Get all relations for a specific node (Enhanced API)"""
+    """Get all relations for a specific node - Enhanced API (requires authentication with 'read' permission)"""
     entity_name = request.args.get('name', '')
     
     if not entity_name:
@@ -362,8 +369,9 @@ def get_node_relations():
         return jsonify({'error': f'Failed to get node relations: {str(e)}'}), 500
 
 @app.route('/api/health')
+@require_auth('read')
 def health_check():
-    """Health check endpoint"""
+    """Health check endpoint (requires authentication with 'read' permission)"""
     try:
         # Test connection to MCP server
         health_result = mcp_client.call_tool("health_check", {})
@@ -406,10 +414,13 @@ def health_check():
 # MCP Proxy Route (Phase 1 Implementation)
 @app.route('/mcp', methods=['GET', 'POST', 'OPTIONS'])
 @app.route('/mcp/<path:subpath>', methods=['GET', 'POST', 'OPTIONS'])
+@require_auth('read')  # MCP requires at least read permission
 def mcp_proxy(subpath=''):
     """
     Proxy MCP StreamableHTTP requests to internal MCP server
     Maintains streaming, headers, and MCP protocol compatibility
+    
+    Authentication: Requires API key with 'read' permission
     """
     
     # Handle CORS preflight for MCP clients

@@ -22,9 +22,16 @@ services:
       - WEB_UI_PORT=8080
       - MCP_SERVER_URL=http://localhost:3000/mcp
       - MCP_PROXY_INTERNAL_URL=http://localhost:3000/mcp
+      - AUTH_ENABLED=true
+      # Set API_KEYS via environment variable or secrets management:
+      # Format: "key:name:permissions|key2:name2:perms"
+      # Example: "prod-key-abc:Copilot:read,write|admin-key-xyz:Admin:read,write,admin"
+      - API_KEYS=${API_KEYS:-}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      # Use root endpoint for health check (serves static files, no auth needed)
+      # API health endpoint requires authentication: /api/health
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -9,7 +9,11 @@ __pycache__/
 
 # Environment files
 .env
-.env.*
+.env.local
+.env.*.local
+
+# Keep .env.example for documentation
+!.env.example
 
 # OS files
 .DS_Store

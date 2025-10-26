@@ -67,7 +67,9 @@ ENV NODE_ENV=production \
     WEB_UI_PORT=8080 \
     MEMORY_FILE_PATH=/app/data/memory.json \
     MCP_SERVER_URL=http://localhost:3000/mcp \
-    MCP_PROXY_INTERNAL_URL=http://localhost:3000/mcp
+    MCP_PROXY_INTERNAL_URL=http://localhost:3000/mcp \
+    AUTH_ENABLED=true \
+    API_KEYS=""
 
 # Start both services
 CMD ["/app/start-consolidated.sh"]
