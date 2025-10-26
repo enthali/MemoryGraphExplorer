@@ -1,37 +1,32 @@
+# Production docker-compose: Consolidated single container
+# Runs both MCP Server and Web UI in one container
 
 name: memorygraphexplorer
+
 services:
-  # MCP Server Backend  
-  mcp-server:
+  memory-graph-explorer:
     build:
-      context: backend/mcp-server
+      context: .
       dockerfile: Dockerfile
-    container_name: mcp-server
+    container_name: memory-graph-explorer
     ports:
-      - "3000:3000"  # Production: Expose MCP HTTP server on host port 3000
+      - "8080:8080"  # Production: Web UI on host port 8080 (MCP internal on 3000)
     volumes:
       # Mount the memory.json file from its current location
       - C:/workspace/Journal/memory.json:/app/data/memory.json
     environment:
       - NODE_ENV=production
-      - MEMORY_FILE_PATH=/app/data/memory.json
-      - PORT=3000
-    command: ["node", "dist/index.js"]  # Use main HTTP server
-    restart: unless-stopped
-
-  # Memory Graph Explorer (Web UI)
-  memory-graph-explorer:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-    container_name: memory-graph-explorer
-    ports:
-      - "8080:8080"  # Production: Web UI on host port 8080
-    environment:
       - FLASK_ENV=production
-      - MCP_SERVER_URL=http://mcp-server:3000/mcp
+      - MEMORY_FILE_PATH=/app/data/memory.json
+      - MCP_SERVER_PORT=3000
+      - WEB_UI_PORT=8080
+      - MCP_SERVER_URL=http://localhost:3000/mcp
+      - MCP_PROXY_INTERNAL_URL=http://localhost:3000/mcp
     restart: unless-stopped
-    depends_on:
-      - mcp-server
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
-# No separate networks needed for single container setup
