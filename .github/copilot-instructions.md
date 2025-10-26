@@ -4,8 +4,15 @@ A containerized knowledge graph visualization system with hybrid MCP (Model Cont
 
 ## Working Effectively
 
-### Quick Start (Recommended)
-- **Local Development Setup (FASTEST)**:
+### Development Container (RECOMMENDED FOR DEVELOPMENT)
+- **GitHub Codespaces**: Click "Create codespace on main" - automatic setup in ~3-5 minutes
+- **Local VS Code**: `F1` → "Dev Containers: Reopen in Container" - automatic setup
+- **Benefits**: Isolated environment, all dependencies pre-installed, consistent across machines
+- **Post-create script**: Automatically runs `npm install`, builds TypeScript, installs Python deps
+- **See**: `.devcontainer/README.md` for detailed documentation
+
+### Quick Start (Alternative - Direct Local Setup)
+- **Local Development Setup (FASTEST if devcontainer not available)**:
   - `cd backend/mcp-server && npm install` -- takes ~8 seconds. NEVER CANCEL.
   - `pip3 install --user --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt` -- takes ~30 seconds if SSL issues exist. NEVER CANCEL.
   - Start MCP server: `cd backend/mcp-server && MEMORY_FILE_PATH="../../data/memory-test.json" PORT=3001 node dist/index.js`
@@ -15,7 +22,7 @@ A containerized knowledge graph visualization system with hybrid MCP (Model Cont
 - **Production**: `docker compose up` -- **WARNING: May fail due to SSL certificate issues in sandboxed environments**
 - **Development**: `docker compose -f docker-compose.dev.yml up` 
 - **Build Time**: 5-15 minutes depending on network. NEVER CANCEL. Set timeout to 30+ minutes.
-- **Known Issue**: Docker builds may fail with SSL certificate errors. Use local development setup as fallback.
+- **Known Issue**: Docker builds may fail with SSL certificate errors. Use local development setup or devcontainer as fallback.
 
 ### Port Configuration
 - **Production**: MCP server (port 3000), Web UI (port 8080)

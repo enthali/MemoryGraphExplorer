@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Development docker-compose: runs a dev MCP server (using data/memory-test.json)
 # and a Web Viewer connected to the dev MCP server. Both services can run
 # in parallel with production setups if you use different ports.
@@ -16,11 +14,13 @@ services:
     ports:
       - "3001:3001"  # Development: MCP server on host port 3001
     volumes:
-      # Use test data instead of live Journal data
-      - ./data/memory-test.json:/app/data/memory.json
+      # Mount entire data directory
+      # NOTE: Using Windows host path for Docker Desktop compatibility
+      # TODO: Make this configurable for Codespaces/Azure deployment
+      - C:/workspace/web_Projects/MemoryGraphExplorer/data:/app/data
     environment:
       - NODE_ENV=development
-      - MEMORY_FILE_PATH=/app/data/memory.json
+      - MEMORY_FILE_PATH=/app/data/memory-test.json
       - PORT=3001
     command: ["node", "dist/index.js"]
     restart: unless-stopped

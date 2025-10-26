@@ -1,0 +1,34 @@
+# Auto detect text files and normalize line endings to LF
+* text=auto eol=lf
+
+# Explicitly declare text files
+*.md text
+*.txt text
+*.json text
+*.js text
+*.ts text
+*.py text
+*.sh text eol=lf
+*.bash text eol=lf
+*.yml text
+*.yaml text
+*.html text
+*.css text
+*.xml text
+
+# Declare files that should not be normalized
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+
+# Scripts should always use LF
+*.sh text eol=lf
+.devcontainer/post-create.sh text eol=lf
+tools/*.sh text eol=lf

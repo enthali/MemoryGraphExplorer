@@ -1,0 +1,48 @@
+{
+	"name": "Memory Graph Explorer",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": ".."
+	},
+	"mounts": [
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+	],
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"editor.formatOnSave": true,
+				"python.defaultInterpreterPath": "/usr/local/bin/python",
+				"typescript.tsdk": "node_modules/typescript/lib",
+				"files.watcherExclude": {
+					"**/node_modules/**": true,
+					"**/.git/**": true,
+					"**/dist/**": true,
+					"**/__pycache__/**": true
+				}
+			},
+			"extensions": [
+				"ms-python.python",
+				"ms-python.black-formatter",
+				"ms-python.pylint",
+				"ms-python.vscode-pylance",
+				"dbaeumer.vscode-eslint",
+				"esbenp.prettier-vscode",
+				"bradlc.vscode-tailwindcss",
+				"DavidAnson.vscode-markdownlint",
+				"github.copilot",
+				"github.copilot-chat",
+				"github.vscode-github-actions",
+				"ms-azuretools.vscode-docker"
+			]
+		},
+		"codespaces": {
+			"openFiles": [
+				"README.md",
+				"docs/design/system-architecture.md"
+			]
+		}
+	},
+	"postCreateCommand": "bash .devcontainer/post-create.sh",
+	"remoteUser": "vscode"
+}
