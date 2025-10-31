@@ -5,9 +5,9 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { promises as fs } from 'fs';
-import { KnowledgeGraphManager } from './dist/src/KnowledgeGraphManager.js';
+import { KnowledgeGraphManager } from '../backend/mcp-server/dist/src/KnowledgeGraphManager.js';
 
-const testFilePath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../test-kg-manager.json');
+const testFilePath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../data/test-kg-manager.json');
 
 async function runTests() {
   console.log('🧪 Testing KnowledgeGraphManager with StorageLayer\n');

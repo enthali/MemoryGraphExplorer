@@ -5,9 +5,9 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { promises as fs } from 'fs';
-import { StorageLayer } from './dist/src/storage/StorageLayer.js';
+import { StorageLayer } from '../backend/mcp-server/dist/src/storage/StorageLayer.js';
 
-const testFilePath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../test-memory.json');
+const testFilePath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../data/test-memory.json');
 
 async function runTests() {
   console.log('🧪 Testing UUID-based Storage Layer\n');

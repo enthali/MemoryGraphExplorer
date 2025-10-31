@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * Test the rename entity functionality via HTTP API
+ * Requires MCP server to be running on port 3001
  */
 
 async function makeRequest(data) {

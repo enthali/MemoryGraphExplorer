@@ -5,9 +5,9 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { promises as fs } from 'fs';
-import { KnowledgeGraphManager } from './dist/src/KnowledgeGraphManager.js';
+import { KnowledgeGraphManager } from '../backend/mcp-server/dist/src/KnowledgeGraphManager.js';
 
-const testFilePath = '/tmp/test-legacy.json';
+const testFilePath = path.join(path.dirname(fileURLToPath(import.meta.url)), '../data/test-legacy.json');
 
 async function runBackwardCompatibilityTest() {
   console.log('🔄 Testing backward compatibility with existing data\n');
@@ -74,6 +74,11 @@ async function runBackwardCompatibilityTest() {
     process.exit(1);
   } finally {
     delete process.env.MEMORY_FILE_PATH;
+    try {
+      await fs.unlink(testFilePath);
+    } catch (err) {
+      // Ignore cleanup errors
+    }
   }
 }
 
