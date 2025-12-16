@@ -46,6 +46,12 @@ export interface EventMap {
     results: Entity[];
   };
   'search-cleared': void;
+  'search-results': {
+    query: string;
+    results: Entity[];
+    highlightedNodes: string[];
+  };
+  'search-clear-requested': void;
   
   // UI events
   'theme-changed': { theme: 'light' | 'dark' };
