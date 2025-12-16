@@ -39,6 +39,7 @@ export interface AppState {
   filterDropdownOpen: boolean;
   
   // Visual State
-  currentTheme: 'light' | 'dark';
-  zoomLevel: number;
+  colorMap: Map<string, string>;
+  zoom: number;
+  pan: { x: number; y: number };
 }

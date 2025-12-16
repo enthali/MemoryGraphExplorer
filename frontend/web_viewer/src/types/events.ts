@@ -8,21 +8,25 @@ import type { GraphNode, GraphLink } from './d3-graph.js';
 export interface EventMap {
   // Data events
   'data-loaded': { 
-    entities: Entity[]; 
-    relations: Relation[];
+    rawData?: { entities: Entity[]; relations: Relation[] };
+    entities?: Entity[]; 
+    relations?: Relation[];
     types: TypesData;
+    rootEntity?: Entity | null;
   };
   'data-updated': { 
     entities: Entity[]; 
     relations: Relation[] 
   };
   'filtered-data': {
-    entities: Entity[];
-    relations: Relation[];
+    filteredData?: { entities: Entity[]; relations: Relation[] };
+    entities?: Entity[];
+    relations?: Relation[];
   };
   'entity-types-updated': {
     entityTypes: string[];
   };
+  'data-refresh-requested': void;
   
   // Selection events
   'entity-selected': { entity: Entity | null; node: GraphNode | null };
@@ -55,6 +59,12 @@ export interface EventMap {
   // State events
   'loading-state': { isLoading: boolean; message?: string };
   'error-occurred': { error: Error | string; context?: string };
+  'state-changed': {
+    previous: any;
+    current: any;
+    updates: any;
+  };
+  'state-reset': any;
   
   // Color events
   'color-map-updated': { colorMap: Map<string, string> };
