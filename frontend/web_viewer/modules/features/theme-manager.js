@@ -48,7 +48,8 @@ class ThemeManager {
       this.currentTheme = savedTheme;
     } else {
       // Check system preference
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+      if (prefersDark && prefersDark.matches) {
         this.currentTheme = 'dark';
       }
     }
