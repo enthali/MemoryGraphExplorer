@@ -17,6 +17,8 @@
     --link-opacity: 0.6;
     --tooltip-bg: rgba(0, 0, 0, 0.8);
     --tooltip-text: white;
+    --node-label-color: #1e293b;
+    --node-stroke-color: #ffffff;
 }
 
 /* Dark mode color scheme */
@@ -37,6 +39,8 @@
     --link-opacity: 0.7;
     --tooltip-bg: rgba(30, 41, 59, 0.95);
     --tooltip-text: #f1f5f9;
+    --node-label-color: #f1f5f9;
+    --node-stroke-color: #1e293b;
 }
 
 * {

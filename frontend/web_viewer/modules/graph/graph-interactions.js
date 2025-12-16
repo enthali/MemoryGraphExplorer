@@ -279,7 +279,7 @@ export class GraphInteractions {
       const li = document.createElement('li');
       li.textContent = 'No observations available';
       li.style.fontStyle = 'italic';
-      li.style.color = '#6b7280';
+      li.style.color = 'var(--text-secondary)';
       observationsList.appendChild(li);
     }
   }
@@ -329,7 +329,7 @@ export class GraphInteractions {
       const noConnectionsDiv = document.createElement('div');
       noConnectionsDiv.textContent = 'No connections in current view';
       noConnectionsDiv.style.fontStyle = 'italic';
-      noConnectionsDiv.style.color = '#6b7280';
+      noConnectionsDiv.style.color = 'var(--text-secondary)';
       connectionsList.appendChild(noConnectionsDiv);
     }
   }
