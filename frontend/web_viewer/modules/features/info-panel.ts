@@ -6,8 +6,12 @@
 import { eventBus } from '../core/event-bus.js';
 import { stateManager } from '../core/state-manager.js';
 import { colorService } from '../services/color-service.js';
+import type { Entity } from '../../src/types/index.js';
 
 export class InfoPanelManager {
+  private currentEntity: Entity | null;
+  private panelElement: HTMLElement | null;
+
   constructor() {
     this.currentEntity = null;
     this.panelElement = null;
@@ -71,9 +75,8 @@ export class InfoPanelManager {
 
   /**
    * Update panel with entity information
-   * @param {Object} entity - Entity data to display
    */
-  updatePanel(entity) {
+  updatePanel(entity: Entity | null): void {
     if (!entity) {
       this.clearPanel();
       return;

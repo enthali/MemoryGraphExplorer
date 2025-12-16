@@ -3,8 +3,22 @@
  * Handles all API calls and data fetching from the MCP server
  */
 
+import type { Entity, Relation, GraphData, TypesData } from '../../src/types/index.js';
+
+interface EntityDetailsResponse {
+  entity: Entity;
+  relations: Relation[];
+}
+
+interface MCPMethodParams {
+  query?: string;
+  entityName?: string;
+}
+
 export class MCPClient {
-  constructor(baseURL = '/api') {
+  private baseURL: string;
+
+  constructor(baseURL: string = '/api') {
     this.baseURL = baseURL;
     console.log('🔌 MCP Client initialized');
     console.log(`📡 API Base URL: ${this.baseURL}`);
@@ -12,9 +26,8 @@ export class MCPClient {
 
   /**
    * Read the complete graph from MCP server
-   * @returns {Promise<Object>} - Complete graph data with entities and relations
    */
-  async readGraph() {
+  async readGraph(): Promise<GraphData> {
     console.log('📡 Fetching complete graph from MCP Memory Server...');
     
     try {
@@ -24,7 +37,7 @@ export class MCPClient {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
-      const data = await response.json();
+      const data = await response.json() as GraphData;
       console.log(`✅ Loaded ${data.entities?.length || 0} entities and ${data.relations?.length || 0} relations from MCP Server`);
       
       return {
@@ -33,15 +46,15 @@ export class MCPClient {
       };
     } catch (error) {
       console.error('❌ Failed to fetch graph data from MCP Server:', error);
-      throw new Error(`Unable to connect to MCP Memory Server. Please ensure the server is running and try again. Details: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Unable to connect to MCP Memory Server. Please ensure the server is running and try again. Details: ${errorMessage}`);
     }
   }
 
   /**
    * List available entity and relation types
-   * @returns {Promise<Object>} - Available types from MCP server
    */
-  async listTypes() {
+  async listTypes(): Promise<TypesData> {
     console.log('📡 Fetching available types from MCP Memory Server...');
     
     try {
@@ -60,16 +73,15 @@ export class MCPClient {
       };
     } catch (error) {
       console.error('❌ Failed to fetch types from MCP Server:', error);
-      throw new Error(`Unable to get types from MCP Memory Server. Details: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Unable to get types from MCP Memory Server. Details: ${errorMessage}`);
     }
   }
 
   /**
    * Search for entities matching a query
-   * @param {string} query - Search query string
-   * @returns {Promise<Object>} - Search results
    */
-  async searchNodes(query) {
+  async searchNodes(query: string): Promise<GraphData> {
     console.log(`🔍 Searching nodes for: ${query}`);
     
     try {
@@ -79,7 +91,7 @@ export class MCPClient {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
-      const data = await response.json();
+      const data = await response.json() as GraphData;
       console.log(`✅ Found ${data.entities?.length || 0} entities and ${data.relations?.length || 0} relations for "${query}"`);
       
       return {
@@ -88,16 +100,15 @@ export class MCPClient {
       };
     } catch (error) {
       console.error('❌ Failed to search nodes in MCP Server:', error);
-      throw new Error(`Unable to search nodes. MCP Memory Server connection failed. Details: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Unable to search nodes. MCP Memory Server connection failed. Details: ${errorMessage}`);
     }
   }
 
   /**
    * Get detailed information about a specific entity
-   * @param {string} entityName - Name of the entity to get details for
-   * @returns {Promise<Object>} - Entity details with relations
    */
-  async getEntityDetails(entityName) {
+  async getEntityDetails(entityName: string): Promise<EntityDetailsResponse> {
     console.log(`📋 Getting details for entity: ${entityName}`);
     
     try {
@@ -107,7 +118,7 @@ export class MCPClient {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
-      const data = await response.json();
+      const data = await response.json() as EntityDetailsResponse;
       
       if (!data.entity) {
         throw new Error(`Entity not found: ${entityName}`);
@@ -121,15 +132,15 @@ export class MCPClient {
       };
     } catch (error) {
       console.error('❌ Failed to get entity details from MCP Server:', error);
-      throw new Error(`Unable to get entity details for "${entityName}". MCP Memory Server connection failed. Details: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Unable to get entity details for "${entityName}". MCP Memory Server connection failed. Details: ${errorMessage}`);
     }
   }
 
   /**
    * Test connection to MCP server
-   * @returns {Promise<boolean>} - True if connection is successful
    */
-  async testConnection() {
+  async testConnection(): Promise<boolean> {
     try {
       console.log('🔍 Testing MCP server connection...');
       await this.readGraph();
@@ -143,11 +154,8 @@ export class MCPClient {
 
   /**
    * Generic MCP method call (for future extensibility)
-   * @param {string} method - MCP method name
-   * @param {Object} params - Method parameters
-   * @returns {Promise<*>} - Method result
    */
-  async callMCPMethod(method, params = {}) {
+  async callMCPMethod(method: string, params: MCPMethodParams = {}): Promise<GraphData | TypesData | EntityDetailsResponse> {
     console.log(`🔌 Calling MCP method: ${method}`, params);
     
     switch (method) {
@@ -158,9 +166,15 @@ export class MCPClient {
         return this.listTypes();
       
       case 'memory/search_nodes':
+        if (!params.query) {
+          throw new Error('Query parameter required for search_nodes method');
+        }
         return this.searchNodes(params.query);
       
       case 'memory/get_entity':
+        if (!params.entityName) {
+          throw new Error('EntityName parameter required for get_entity method');
+        }
         return this.getEntityDetails(params.entityName);
       
       default:

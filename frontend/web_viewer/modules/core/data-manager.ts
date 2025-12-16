@@ -6,6 +6,14 @@
 import { eventBus } from './event-bus.js';
 import { stateManager } from './state-manager.js';
 import { mcpClient } from '../services/mcp-client.js';
+import type { Entity, Relation } from '../../src/types/index.js';
+
+interface FilterChangeData {
+  selectedEntityTypes?: string[];
+  selectedRelationTypes?: string[];
+  entityTypes?: string[];
+  relationTypes?: string[];
+}
 
 export class DataManager {
   constructor() {
@@ -16,7 +24,7 @@ export class DataManager {
   /**
    * Setup event listeners for data-related events
    */
-  setupEventListeners() {
+  private setupEventListeners(): void {
     // Listen for filter changes to regenerate filtered data
     eventBus.on('filter-changed', (data) => {
       this.handleFilterChange(data);
@@ -31,7 +39,7 @@ export class DataManager {
   /**
    * Load complete graph from MCP server
    */
-  async loadCompleteGraph() {
+  async loadCompleteGraph(): Promise<void> {
     console.log('📊 Loading complete graph data...');
     
     try {
@@ -58,7 +66,7 @@ export class DataManager {
         availableEntityTypes: typesData.entityTypes,
         availableRelationTypes: typesData.relationTypes,
         rootEntity: rootEntity,
-        centerEntity: rootEntity ? rootEntity.name : null,
+        centerEntity: rootEntity ? rootEntity : null,
         // Set initial filters to include all types
         selectedEntityTypes: typesData.entityTypes.slice(),
         selectedRelationTypes: typesData.relationTypes.slice(),
@@ -80,21 +88,20 @@ export class DataManager {
 
     } catch (error) {
       console.error('❌ Failed to load graph data:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
       stateManager.setState({
         isLoading: false,
-        error: error.message
+        error: errorMessage
       });
-      eventBus.emit('error-occurred', { error: error.message });
+      eventBus.emit('error-occurred', { error: errorMessage });
       throw error;
     }
   }
 
   /**
    * Find root entity with "rootEntity: true" observation, or return first entity
-   * @param {Array} entities - Array of entities
-   * @returns {Object|null} - Root entity or null if no entities
    */
-  findRootEntity(entities) {
+  private findRootEntity(entities: Entity[]): Entity | null {
     if (!entities || entities.length === 0) {
       return null;
     }
@@ -108,6 +115,8 @@ export class DataManager {
     
     // Return root entity if found, otherwise first entity
     const result = rootEntity || entities[0];
+    if (!result) return null;
+    
     console.log(`🎯 Root entity determined: ${result.name} ${rootEntity ? '(from observation)' : '(fallback to first)'}`);
     
     return result;
@@ -117,7 +126,7 @@ export class DataManager {
    * Apply client-side filters to raw data and generate filtered data
    * This method ALWAYS generates filteredData regardless of filter state
    */
-  generateFilteredData() {
+  generateFilteredData(): void {
     const state = stateManager.getState();
     const { rawData, selectedEntityTypes, selectedRelationTypes } = state;
 
@@ -165,18 +174,17 @@ export class DataManager {
 
   /**
    * Handle filter change events
-   * @param {Object} data - Filter change data
    */
-  handleFilterChange(data) {
+  private handleFilterChange(data: FilterChangeData): void {
     console.log('📊 Handling filter change:', data);
     
     // Update filter state
-    const updates = {};
-    if (data.selectedEntityTypes !== undefined) {
-      updates.selectedEntityTypes = data.selectedEntityTypes;
+    const updates: Partial<{ selectedEntityTypes: string[]; selectedRelationTypes: string[] }> = {};
+    if (data.selectedEntityTypes !== undefined || data.entityTypes !== undefined) {
+      updates.selectedEntityTypes = data.selectedEntityTypes || data.entityTypes || [];
     }
-    if (data.selectedRelationTypes !== undefined) {
-      updates.selectedRelationTypes = data.selectedRelationTypes;
+    if (data.selectedRelationTypes !== undefined || data.relationTypes !== undefined) {
+      updates.selectedRelationTypes = data.selectedRelationTypes || data.relationTypes || [];
     }
 
     stateManager.setState(updates);
@@ -187,11 +195,8 @@ export class DataManager {
 
   /**
    * Get network around a specific entity (for centering)
-   * @param {string} centerEntity - Name of the center entity
-   * @param {number} maxDegree - Maximum degree of connections (default: 2)
-   * @returns {Object} - Network data with entities and relations
    */
-  getNetworkAroundEntity(centerEntity, maxDegree = 2) {
+  getNetworkAroundEntity(centerEntity: string, maxDegree: number = 2): { entities: Entity[]; relations: Relation[] } {
     const state = stateManager.getState();
     const filteredData = state.filteredData;
 
@@ -201,15 +206,15 @@ export class DataManager {
 
     console.log(`🔍 Getting ${maxDegree}-degree network around ${centerEntity}`);
 
-    const networkEntities = new Set();
-    const networkRelations = [];
+    const networkEntities = new Set<string>();
+    const networkRelations: Relation[] = [];
     
     // Add center entity
     networkEntities.add(centerEntity);
     
     // Helper function to get connected entities
-    const getConnectedEntities = (entityName) => {
-      const connected = new Set();
+    const getConnectedEntities = (entityName: string): Set<string> => {
+      const connected = new Set<string>();
       
       filteredData.relations.forEach(relation => {
         if (relation.from === entityName) {
@@ -258,7 +263,17 @@ export class DataManager {
   /**
    * Get current data summary
    */
-  getDataSummary() {
+  getDataSummary(): {
+    rawEntities: number;
+    rawRelations: number;
+    filteredEntities: number;
+    filteredRelations: number;
+    availableEntityTypes: number;
+    availableRelationTypes: number;
+    selectedEntityTypes: number;
+    selectedRelationTypes: number;
+    rootEntity: string;
+  } {
     const state = stateManager.getState();
     return {
       rawEntities: state.rawData.entities.length,

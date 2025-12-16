@@ -5,8 +5,13 @@
 
 import { eventBus } from '../core/event-bus.js';
 import { stateManager } from '../core/state-manager.js';
+import type { Entity } from '../../src/types/index.js';
 
 export class SearchManager {
+  searchInput: HTMLInputElement | null;
+  private debounceTimer: ReturnType<typeof setTimeout> | null;
+  private readonly debounceDelay: number;
+
   constructor() {
     this.searchInput = null;
     this.debounceTimer = null;
@@ -20,7 +25,7 @@ export class SearchManager {
   /**
    * Setup event listeners
    */
-  setupEventListeners() {
+  private setupEventListeners(): void {
     // Listen for filtered data updates to update search results
     eventBus.on('filtered-data', (data) => {
       this.updateSearchResults();
@@ -35,13 +40,14 @@ export class SearchManager {
   /**
    * Setup UI event listeners
    */
-  setupUI() {
-    this.searchInput = document.getElementById('search');
+  private setupUI(): void {
+    this.searchInput = document.getElementById('search') as HTMLInputElement | null;
     
     if (this.searchInput) {
       // Live search on input
       this.searchInput.addEventListener('input', (e) => {
-        this.handleSearchInput(e.target.value);
+        const target = e.target as HTMLInputElement;
+        this.handleSearchInput(target.value);
       });
 
       // Clear search on escape key
@@ -53,20 +59,19 @@ export class SearchManager {
 
       // Handle focus/blur for better UX
       this.searchInput.addEventListener('focus', () => {
-        this.searchInput.parentElement.classList.add('search-focused');
+        this.searchInput?.parentElement?.classList.add('search-focused');
       });
 
       this.searchInput.addEventListener('blur', () => {
-        this.searchInput.parentElement.classList.remove('search-focused');
+        this.searchInput?.parentElement?.classList.remove('search-focused');
       });
     }
   }
 
   /**
    * Handle search input with debouncing
-   * @param {string} query - Search query string
    */
-  handleSearchInput(query) {
+  private handleSearchInput(query: string): void {
     // Clear existing debounce timer
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
@@ -80,9 +85,8 @@ export class SearchManager {
 
   /**
    * Perform the actual search
-   * @param {string} query - Search query string
    */
-  performSearch(query) {
+  performSearch(query: string): void {
     const trimmedQuery = query.trim();
     
     console.log(`🔍 Performing search for: "${trimmedQuery}"`);
@@ -127,11 +131,8 @@ export class SearchManager {
 
   /**
    * Search entities by name and observations
-   * @param {string} query - Search query
-   * @param {Array} entities - Array of entities to search
-   * @returns {Array} - Matching entities
    */
-  searchEntities(query, entities) {
+  private searchEntities(query: string, entities: Entity[]): Entity[] {
     if (!query || !entities.length) {
       return [];
     }
@@ -163,7 +164,7 @@ export class SearchManager {
   /**
    * Clear search results and restore full view
    */
-  clearSearchResults() {
+  private clearSearchResults(): void {
     console.log('🔍 Clearing search results');
     
     // Update state
@@ -173,7 +174,7 @@ export class SearchManager {
     });
 
     // Emit clear events
-    eventBus.emit('search-cleared', {});
+    eventBus.emit('search-cleared');
     eventBus.emit('search-results', {
       query: '',
       results: [],
@@ -184,7 +185,7 @@ export class SearchManager {
   /**
    * Clear search input and results
    */
-  clearSearch() {
+  clearSearch(): void {
     console.log('🔍 Clearing search');
     
     if (this.searchInput) {
@@ -201,7 +202,7 @@ export class SearchManager {
   /**
    * Update search results when filtered data changes
    */
-  updateSearchResults() {
+  private updateSearchResults(): void {
     const state = stateManager.getState();
     const currentQuery = state.searchQuery;
     
@@ -214,7 +215,7 @@ export class SearchManager {
   /**
    * Focus on search input
    */
-  focusSearch() {
+  focusSearch(): void {
     if (this.searchInput) {
       this.searchInput.focus();
       this.searchInput.select();
@@ -223,16 +224,15 @@ export class SearchManager {
 
   /**
    * Navigate through search results
-   * @param {string} direction - 'next' or 'previous'
    */
-  navigateResults(direction = 'next') {
+  navigateResults(direction: 'next' | 'previous' = 'next'): void {
     const state = stateManager.getState();
     const searchResults = state.searchResults;
     
     if (!searchResults.length) return;
 
     const currentSelected = state.selectedEntity;
-    let currentIndex = searchResults.findIndex(result => result.name === currentSelected);
+    let currentIndex = searchResults.findIndex(result => result.name === (currentSelected?.name || ''));
     
     if (direction === 'next') {
       currentIndex = (currentIndex + 1) % searchResults.length;
@@ -241,10 +241,11 @@ export class SearchManager {
     }
     
     const nextResult = searchResults[currentIndex];
+    if (!nextResult) return;
     
     // Emit entity selection event
-    eventBus.emit('entity-selected', { entity: nextResult });
-    eventBus.emit('entity-centered', { entity: nextResult });
+    eventBus.emit('entity-selected', { entity: nextResult, node: null });
+    eventBus.emit('entity-centered', { entity: nextResult, node: null });
     
     console.log(`🔍 Navigated to search result: ${nextResult.name}`);
   }
@@ -252,7 +253,13 @@ export class SearchManager {
   /**
    * Get search statistics
    */
-  getSearchStats() {
+  getSearchStats(): {
+    query: string;
+    resultsCount: number;
+    totalEntities: number;
+    hasActiveSearch: boolean;
+    highlightedNodes: number;
+  } {
     const state = stateManager.getState();
     return {
       query: state.searchQuery,
@@ -265,10 +272,8 @@ export class SearchManager {
 
   /**
    * Add search result highlighting to an entity element
-   * @param {Element} element - DOM element to highlight
-   * @param {string} entityName - Name of the entity
    */
-  addSearchHighlight(element, entityName) {
+  addSearchHighlight(element: Element, entityName: string): void {
     const state = stateManager.getState();
     const isHighlighted = state.highlightedNodes.includes(entityName);
     
@@ -281,9 +286,8 @@ export class SearchManager {
 
   /**
    * Set search query programmatically
-   * @param {string} query - Search query to set
    */
-  setQuery(query) {
+  setQuery(query: string): void {
     if (this.searchInput) {
       this.searchInput.value = query;
     }

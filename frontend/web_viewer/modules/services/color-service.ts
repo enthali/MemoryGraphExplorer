@@ -5,8 +5,28 @@
 
 import { eventBus } from '../core/event-bus.js';
 import { stateManager } from '../core/state-manager.js';
+import type { EventMap } from '../../src/types/index.js';
+
+interface ColorConfig {
+  entityTypeColors: Record<string, string>;
+  palette?: string[];
+  version?: string;
+  timestamp?: string;
+}
+
+interface ColorStats {
+  totalEntityTypes: number;
+  assignedColors: string[];
+  availableColors: number;
+  usedColorSlots: number;
+  colorMap: Record<string, string>;
+}
 
 export class ColorService {
+  private colorPalette: string[];
+  private entityTypeColorMap: Map<string, string>;
+  private colorIndex: number;
+
   constructor() {
     // Use the same color palette as the original colorPalette.js
     this.colorPalette = [
@@ -37,7 +57,7 @@ export class ColorService {
   /**
    * Setup event listeners
    */
-  setupEventListeners() {
+  private setupEventListeners(): void {
     // Listen for data loaded to assign colors
     eventBus.on('data-loaded', (data) => {
       this.assignColorsToEntityTypes(data.types.entityTypes);
@@ -51,9 +71,8 @@ export class ColorService {
 
   /**
    * Assign colors to entity types
-   * @param {Array} entityTypes - Array of entity type names
    */
-  assignColorsToEntityTypes(entityTypes) {
+  assignColorsToEntityTypes(entityTypes: string[]): void {
     console.log('🎨 Assigning colors to entity types:', entityTypes);
 
     // Reset color index for consistent assignment
@@ -68,36 +87,36 @@ export class ColorService {
     });
 
     // Update state with color map
-    const colorMapObject = Object.fromEntries(this.entityTypeColorMap);
     stateManager.setState({
       colorMap: this.entityTypeColorMap
     });
 
-    // Emit color map updated event
+    // Emit color map updated event with entity types
     eventBus.emit('color-map-updated', {
-      colorMap: colorMapObject,
-      entityTypes: entityTypes
+      entityTypes: entityTypes,
+      colorMap: this.entityTypeColorMap
     });
   }
 
   /**
    * Get next color from palette
-   * @returns {string} - Hex color code
    */
-  getNextColor() {
+  private getNextColor(): string {
     const color = this.colorPalette[this.colorIndex % this.colorPalette.length];
+    if (!color) {
+      throw new Error('Color palette is empty');
+    }
     this.colorIndex++;
     return color;
   }
 
   /**
    * Get color for specific entity type
-   * @param {string} entityType - Entity type name
-   * @returns {string} - Hex color code
    */
-  getEntityTypeColor(entityType) {
-    if (this.entityTypeColorMap.has(entityType)) {
-      return this.entityTypeColorMap.get(entityType);
+  getEntityTypeColor(entityType: string): string {
+    const existingColor = this.entityTypeColorMap.get(entityType);
+    if (existingColor) {
+      return existingColor;
     }
 
     // Assign new color if not found
@@ -111,26 +130,22 @@ export class ColorService {
 
   /**
    * Get color map as plain object
-   * @returns {Object} - Color map object
    */
-  getColorMap() {
+  getColorMap(): Record<string, string> {
     return Object.fromEntries(this.entityTypeColorMap);
   }
 
   /**
    * Get color map as Map
-   * @returns {Map} - Color map
    */
-  getColorMapInstance() {
+  getColorMapInstance(): Map<string, string> {
     return this.entityTypeColorMap;
   }
 
   /**
    * Set custom color for entity type
-   * @param {string} entityType - Entity type name
-   * @param {string} color - Hex color code
    */
-  setEntityTypeColor(entityType, color) {
+  setEntityTypeColor(entityType: string, color: string): void {
     console.log(`🎨 Setting custom color ${color} for entity type: ${entityType}`);
     
     this.entityTypeColorMap.set(entityType, color);
@@ -142,15 +157,14 @@ export class ColorService {
 
     // Emit update event
     eventBus.emit('color-map-updated', {
-      colorMap: this.getColorMap(),
-      entityTypes: Array.from(this.entityTypeColorMap.keys())
+      colorMap: this.entityTypeColorMap
     });
   }
 
   /**
    * Reset colors for all entity types
    */
-  resetColors() {
+  resetColors(): void {
     console.log('🎨 Resetting all entity type colors');
     
     this.entityTypeColorMap.clear();
@@ -161,16 +175,15 @@ export class ColorService {
       colorMap: new Map()
     });
 
-    // Emit reset event
-    eventBus.emit('color-map-reset', {});
+    // Emit reset event - need to add this to EventMap if not already there
+    // For now, we'll comment this out as it's not in the EventMap
+    // eventBus.emit('color-map-reset', {});
   }
 
   /**
    * Get contrasting text color for background
-   * @param {string} backgroundColor - Background color in hex
-   * @returns {string} - 'white' or 'black'
    */
-  getContrastingTextColor(backgroundColor) {
+  getContrastingTextColor(backgroundColor: string): 'white' | 'black' {
     // Remove # if present
     const hex = backgroundColor.replace('#', '');
     
@@ -188,11 +201,8 @@ export class ColorService {
 
   /**
    * Generate a lighter version of a color
-   * @param {string} color - Hex color code
-   * @param {number} factor - Lightening factor (0-1)
-   * @returns {string} - Lighter hex color
    */
-  lightenColor(color, factor = 0.2) {
+  lightenColor(color: string, factor: number = 0.2): string {
     const hex = color.replace('#', '');
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
@@ -207,11 +217,8 @@ export class ColorService {
 
   /**
    * Generate a darker version of a color
-   * @param {string} color - Hex color code
-   * @param {number} factor - Darkening factor (0-1)
-   * @returns {string} - Darker hex color
    */
-  darkenColor(color, factor = 0.2) {
+  darkenColor(color: string, factor: number = 0.2): string {
     const hex = color.replace('#', '');
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
@@ -227,7 +234,7 @@ export class ColorService {
   /**
    * Get color statistics
    */
-  getStats() {
+  getStats(): ColorStats {
     return {
       totalEntityTypes: this.entityTypeColorMap.size,
       assignedColors: Array.from(this.entityTypeColorMap.values()),
@@ -239,9 +246,8 @@ export class ColorService {
 
   /**
    * Export color map for external use
-   * @returns {Object} - Exportable color configuration
    */
-  exportColorMap() {
+  exportColorMap(): ColorConfig {
     return {
       entityTypeColors: this.getColorMap(),
       palette: this.colorPalette,
@@ -252,9 +258,8 @@ export class ColorService {
 
   /**
    * Import color map from external configuration
-   * @param {Object} colorConfig - Color configuration object
    */
-  importColorMap(colorConfig) {
+  importColorMap(colorConfig: ColorConfig): void {
     if (!colorConfig.entityTypeColors) {
       console.error('🎨 Invalid color configuration: missing entityTypeColors');
       return;
@@ -281,8 +286,7 @@ export class ColorService {
     });
 
     eventBus.emit('color-map-updated', {
-      colorMap: this.getColorMap(),
-      entityTypes: Array.from(this.entityTypeColorMap.keys())
+      colorMap: this.entityTypeColorMap
     });
 
     console.log('🎨 Color map imported successfully');

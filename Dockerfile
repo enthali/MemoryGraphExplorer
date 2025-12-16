@@ -17,7 +17,25 @@ RUN apk update && apk upgrade && \
     npm ci && \
     npm run build
 
-# Stage 2: Final consolidated image
+# Stage 2: Build Frontend (TypeScript → JavaScript)
+FROM node:22-alpine AS frontend-builder
+
+WORKDIR /frontend-build
+
+# Copy frontend files
+COPY frontend/web_viewer/package.json frontend/web_viewer/package-lock.json ./
+COPY frontend/web_viewer/tsconfig.json ./
+COPY frontend/web_viewer/vite.config.ts ./
+COPY frontend/web_viewer/index.html ./
+COPY frontend/web_viewer/styles.css ./
+COPY frontend/web_viewer/main.ts ./
+COPY frontend/web_viewer/modules/ ./modules/
+COPY frontend/web_viewer/src/ ./src/
+
+# Install dependencies and build
+RUN npm ci && npm run build
+
+# Stage 3: Final consolidated image
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -45,8 +63,11 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy web viewer files
-COPY frontend/web_viewer/ ./web_viewer/
+# Copy built frontend from builder stage
+COPY --from=frontend-builder /frontend-build/dist ./web_viewer/
+
+# Copy server.py separately (not part of Vite build)
+COPY frontend/web_viewer/server.py ./web_viewer/
 
 # Create data directory for memory.json
 RUN mkdir -p /app/data

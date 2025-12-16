@@ -6,6 +6,11 @@
 import { eventBus } from '../core/event-bus.js';
 
 class ThemeManager {
+  private currentTheme: 'light' | 'dark';
+  private themeToggleButton: HTMLElement | null;
+  private readonly storageKey: string;
+  private readonly prefersDarkMedia: MediaQueryList | null;
+
   constructor() {
     this.currentTheme = 'light';
     this.themeToggleButton = null;
@@ -18,7 +23,7 @@ class ThemeManager {
   /**
    * Initialize theme manager
    */
-  initialize() {
+  initialize(): void {
     // Get theme toggle button
     this.themeToggleButton = document.getElementById('theme-toggle');
     
@@ -42,11 +47,11 @@ class ThemeManager {
   /**
    * Load theme from localStorage or system preference
    */
-  loadTheme() {
+  private loadTheme(): void {
     // Check localStorage first
     const savedTheme = localStorage.getItem(this.storageKey);
     
-    if (savedTheme) {
+    if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
       this.currentTheme = savedTheme;
     } else {
       // Check system preference using cached media query
@@ -61,16 +66,15 @@ class ThemeManager {
   /**
    * Toggle between light and dark themes
    */
-  toggleTheme() {
+  toggleTheme(): void {
     const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
     this.setTheme(newTheme);
   }
 
   /**
    * Set a specific theme
-   * @param {string} theme - 'light' or 'dark'
    */
-  setTheme(theme) {
+  setTheme(theme: 'light' | 'dark'): void {
     if (theme !== 'light' && theme !== 'dark') {
       console.warn('⚠️ Invalid theme:', theme);
       return;
@@ -88,9 +92,8 @@ class ThemeManager {
 
   /**
    * Apply theme to the document
-   * @param {string} theme - 'light' or 'dark'
    */
-  applyTheme(theme) {
+  private applyTheme(theme: 'light' | 'dark'): void {
     const html = document.documentElement;
     
     if (theme === 'dark') {
@@ -110,9 +113,8 @@ class ThemeManager {
 
   /**
    * Save theme preference to localStorage
-   * @param {string} theme - 'light' or 'dark'
    */
-  saveTheme(theme) {
+  private saveTheme(theme: 'light' | 'dark'): void {
     try {
       localStorage.setItem(this.storageKey, theme);
     } catch (error) {
@@ -122,25 +124,27 @@ class ThemeManager {
 
   /**
    * Get current theme
-   * @returns {string} Current theme ('light' or 'dark')
    */
-  getCurrentTheme() {
+  getCurrentTheme(): 'light' | 'dark' {
     return this.currentTheme;
   }
 
   /**
    * Check if dark mode is active
-   * @returns {boolean} True if dark mode is active
    */
-  isDarkMode() {
+  isDarkMode(): boolean {
     return this.currentTheme === 'dark';
   }
 
   /**
    * Get theme stats for debugging
-   * @returns {object} Theme manager stats
    */
-  getStats() {
+  getStats(): {
+    currentTheme: 'light' | 'dark';
+    isDarkMode: boolean;
+    hasToggleButton: boolean;
+    storageAvailable: boolean;
+  } {
     return {
       currentTheme: this.currentTheme,
       isDarkMode: this.isDarkMode(),
@@ -151,9 +155,8 @@ class ThemeManager {
 
   /**
    * Check if localStorage is available
-   * @returns {boolean} True if localStorage is available
    */
-  isStorageAvailable() {
+  private isStorageAvailable(): boolean {
     try {
       const test = '__theme_test__';
       localStorage.setItem(test, test);
