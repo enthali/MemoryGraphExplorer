@@ -55,6 +55,17 @@ export interface EventMap {
     y: number;
   };
   'graph-centered': void;
+  'app-ready': {
+    initialized: boolean;
+    timestamp: Date;
+  };
+  'view-reset': {
+    timestamp: Date;
+  };
+  'window-resized': {
+    width: number;
+    height: number;
+  };
   
   // State events
   'loading-state': { isLoading: boolean; message?: string };
