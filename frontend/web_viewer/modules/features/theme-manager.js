@@ -10,6 +10,7 @@ class ThemeManager {
     this.currentTheme = 'light';
     this.themeToggleButton = null;
     this.storageKey = 'memory-graph-theme';
+    this.prefersDarkMedia = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
     
     console.log('🎨 Theme Manager initialized');
   }
@@ -23,16 +24,17 @@ class ThemeManager {
     
     if (!this.themeToggleButton) {
       console.warn('⚠️ Theme toggle button not found');
-      return;
     }
 
-    // Load saved theme preference
+    // Load saved theme preference (works even without button)
     this.loadTheme();
 
-    // Setup event listener
-    this.themeToggleButton.addEventListener('click', () => {
-      this.toggleTheme();
-    });
+    // Setup event listener if button exists
+    if (this.themeToggleButton) {
+      this.themeToggleButton.addEventListener('click', () => {
+        this.toggleTheme();
+      });
+    }
 
     console.log('✅ Theme Manager initialized with theme:', this.currentTheme);
   }
@@ -47,9 +49,8 @@ class ThemeManager {
     if (savedTheme) {
       this.currentTheme = savedTheme;
     } else {
-      // Check system preference
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
-      if (prefersDark && prefersDark.matches) {
+      // Check system preference using cached media query
+      if (this.prefersDarkMedia && this.prefersDarkMedia.matches) {
         this.currentTheme = 'dark';
       }
     }
