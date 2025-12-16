@@ -4,8 +4,14 @@
  */
 
 import { eventBus } from './event-bus.js';
+import type { AppState } from '../../src/types/index.js';
+
+type StateSubscriber = (currentState: AppState, previousState: AppState) => void;
 
 export class StateManager {
+  private state: AppState;
+  private subscribers: StateSubscriber[];
+
   constructor() {
     this.state = this.getInitialState();
     this.subscribers = [];
@@ -15,7 +21,7 @@ export class StateManager {
   /**
    * Get the initial application state
    */
-  getInitialState() {
+  private getInitialState(): AppState {
     return {
       // Data State - Complete dataset from MCP server
       rawData: { 
@@ -57,15 +63,27 @@ export class StateManager {
   /**
    * Get current state (immutable)
    */
-  getState() {
-    return JSON.parse(JSON.stringify(this.state));
+  getState(): AppState {
+    // Deep clone with Map support
+    const cloned = JSON.parse(JSON.stringify(this.state, (key, value) => {
+      if (value instanceof Map) {
+        return Object.fromEntries(value);
+      }
+      return value;
+    }));
+    
+    // Restore Map
+    if (cloned.colorMap && typeof cloned.colorMap === 'object') {
+      cloned.colorMap = new Map(Object.entries(cloned.colorMap));
+    }
+    
+    return cloned;
   }
 
   /**
    * Update state with new values
-   * @param {Object} updates - Object with state updates
    */
-  setState(updates) {
+  setState(updates: Partial<AppState>): void {
     const previousState = this.getState();
     
     // Create new state object with updates
@@ -89,31 +107,33 @@ export class StateManager {
 
   /**
    * Update nested state properties
-   * @param {string} path - Dot-separated path to the property (e.g., 'rawData.entities')
-   * @param {*} value - New value
    */
-  setStateProperty(path, value) {
+  setStateProperty(path: string, value: any): void {
     const keys = path.split('.');
-    const updates = {};
-    let current = updates;
+    const updates: any = {};
+    let current: any = updates;
     
     // Build nested object
     for (let i = 0; i < keys.length - 1; i++) {
-      current[keys[i]] = { ...this.state[keys[i]] };
-      current = current[keys[i]];
+      const key = keys[i];
+      if (!key) continue;
+      current[key] = { ...(this.state as any)[key] };
+      current = current[key];
     }
-    current[keys[keys.length - 1]] = value;
+    const lastKey = keys[keys.length - 1];
+    if (lastKey) {
+      current[lastKey] = value;
+    }
     
     this.setState(updates);
   }
 
   /**
    * Get specific state property
-   * @param {string} path - Dot-separated path to the property
    */
-  getStateProperty(path) {
+  getStateProperty(path: string): any {
     const keys = path.split('.');
-    let current = this.state;
+    let current: any = this.state;
     
     for (const key of keys) {
       if (current === null || current === undefined) {
@@ -127,9 +147,8 @@ export class StateManager {
 
   /**
    * Subscribe to state changes
-   * @param {Function} callback - Function to call when state changes
    */
-  subscribe(callback) {
+  subscribe(callback: StateSubscriber): () => void {
     this.subscribers.push(callback);
     console.log('🗄️ New state subscriber added');
     
@@ -143,7 +162,7 @@ export class StateManager {
   /**
    * Notify all subscribers of state changes
    */
-  notifySubscribers(previousState, currentState) {
+  private notifySubscribers(previousState: AppState, currentState: AppState): void {
     this.subscribers.forEach(callback => {
       try {
         callback(currentState, previousState);
@@ -156,17 +175,31 @@ export class StateManager {
   /**
    * Reset state to initial values
    */
-  reset() {
+  reset(): void {
     console.log('🗄️ Resetting state to initial values');
+    const emptyState = {} as AppState;
     this.state = this.getInitialState();
-    this.notifySubscribers({}, this.state);
+    this.notifySubscribers(emptyState, this.state);
     eventBus.emit('state-reset', this.getState());
   }
 
   /**
    * Get state summary for debugging
    */
-  getStateSummary() {
+  getStateSummary(): {
+    entities: number;
+    relations: number;
+    filteredEntities: number;
+    filteredRelations: number;
+    centerEntity: any;
+    selectedEntity: any;
+    rootEntity: any;
+    searchQuery: string;
+    selectedEntityTypes: number;
+    selectedRelationTypes: number;
+    isLoading: boolean;
+    error: string | null;
+  } {
     const state = this.getState();
     return {
       entities: state.rawData.entities.length,

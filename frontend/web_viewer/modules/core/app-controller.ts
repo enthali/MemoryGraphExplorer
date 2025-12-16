@@ -10,6 +10,8 @@ import { filterManager } from '../features/filter-manager.js';
 import { searchManager } from '../features/search-manager.js';
 
 export class AppController {
+  private initialized: boolean;
+
   constructor() {
     this.initialized = false;
     this.setupEventListeners();
@@ -19,10 +21,11 @@ export class AppController {
   /**
    * Setup event listeners for app-level coordination
    */
-  setupEventListeners() {
+  private setupEventListeners(): void {
     // Listen for critical errors
     eventBus.on('error-occurred', (data) => {
-      this.handleError(data.error);
+      const errorMessage = typeof data.error === 'string' ? data.error : data.error.message;
+      this.handleError(errorMessage);
     });
 
     // Listen for loading state changes
@@ -47,7 +50,7 @@ export class AppController {
   /**
    * Setup UI event listeners
    */
-  setupUIEventListeners() {
+  private setupUIEventListeners(): void {
     // Refresh data button
     const refreshBtn = document.getElementById('refresh-btn');
     if (refreshBtn) {
@@ -81,7 +84,7 @@ export class AppController {
   /**
    * Initialize the application
    */
-  async initializeApp() {
+  async initializeApp(): Promise<void> {
     console.log('🚀 Initializing Memory Graph Explorer...');
     
     try {
@@ -106,7 +109,8 @@ export class AppController {
 
     } catch (error) {
       console.error('❌ Failed to initialize app:', error);
-      this.handleError(error.message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.handleError(errorMessage);
       throw error;
     }
   }
@@ -114,7 +118,7 @@ export class AppController {
   /**
    * Handle data loaded event
    */
-  handleDataLoaded(data) {
+  private handleDataLoaded(data: any): void {
     console.log('🎮 App Controller: Data loaded, completing initialization');
     
     // Center on root entity if available
@@ -131,26 +135,29 @@ export class AppController {
 
   /**
    * Center the view on a specific entity
-   * @param {string} entityName - Name of the entity to center on
    */
-  centerOnEntity(entityName) {
+  centerOnEntity(entityName: string): void {
     console.log(`🎯 Centering on entity: ${entityName}`);
+    
+    // Find entity in current state
+    const state = stateManager.getState();
+    const entity = state.rawData.entities.find(e => e.name === entityName);
     
     // Update state
     stateManager.setState({
-      centerEntity: entityName,
-      selectedEntity: entityName
+      centerEntity: entity || null,
+      selectedEntity: entity || null
     });
 
     // Emit centering events
-    eventBus.emit('entity-centered', { entity: { name: entityName } });
-    eventBus.emit('entity-selected', { entity: { name: entityName } });
+    eventBus.emit('entity-centered', { entity: entity || null, node: null });
+    eventBus.emit('entity-selected', { entity: entity || null, node: null });
   }
 
   /**
    * Refresh data from server
    */
-  async refreshData() {
+  async refreshData(): Promise<void> {
     console.log('🔄 Refreshing data...');
     
     try {
@@ -166,7 +173,7 @@ export class AppController {
   /**
    * Reset view to initial state
    */
-  resetView() {
+  resetView(): void {
     console.log('🏠 Resetting view...');
     
     // Clear search
@@ -192,7 +199,7 @@ export class AppController {
   /**
    * Handle keyboard shortcuts
    */
-  handleKeyboardShortcuts(event) {
+  private handleKeyboardShortcuts(event: KeyboardEvent): void {
     // ESC to close panels and clear search
     if (event.key === 'Escape') {
       searchManager.clearSearch();
@@ -232,10 +239,11 @@ export class AppController {
     // Enter to center on selected search result
     if (event.key === 'Enter') {
       const state = stateManager.getState();
-      if (state.searchResults.length > 0 && document.activeElement !== searchManager.searchInput) {
+      const searchInput = document.getElementById('search-input');
+      if (state.searchResults.length > 0 && document.activeElement !== searchInput) {
         const selectedEntity = state.selectedEntity;
         if (selectedEntity) {
-          this.centerOnEntity(selectedEntity);
+          this.centerOnEntity(selectedEntity.name);
         }
       }
     }
@@ -244,19 +252,19 @@ export class AppController {
   /**
    * Check if an input field is currently focused
    */
-  isInputFocused() {
+  private isInputFocused(): boolean {
     const activeElement = document.activeElement;
-    return activeElement && (
+    return activeElement !== null && (
       activeElement.tagName === 'INPUT' || 
       activeElement.tagName === 'TEXTAREA' ||
-      activeElement.contentEditable === 'true'
+      (activeElement as HTMLElement).contentEditable === 'true'
     );
   }
 
   /**
    * Handle error states
    */
-  handleError(errorMessage) {
+  handleError(errorMessage: string): void {
     console.error('🎮 App Controller: Handling error:', errorMessage);
     
     this.hideLoading();
@@ -272,7 +280,7 @@ export class AppController {
   /**
    * Handle loading state changes
    */
-  handleLoadingState(data) {
+  private handleLoadingState(data: { isLoading: boolean; message?: string }): void {
     if (data.isLoading) {
       this.showLoading(data.message);
     } else {
@@ -283,7 +291,7 @@ export class AppController {
   /**
    * Show loading state
    */
-  showLoading(message = 'Loading...') {
+  private showLoading(message: string = 'Loading...'): void {
     const loadingEl = document.getElementById('loading');
     const errorEl = document.getElementById('error');
     
@@ -303,7 +311,7 @@ export class AppController {
   /**
    * Hide loading state
    */
-  hideLoading() {
+  private hideLoading(): void {
     const loadingEl = document.getElementById('loading');
     if (loadingEl) {
       loadingEl.classList.add('hidden');
@@ -313,7 +321,7 @@ export class AppController {
   /**
    * Show error state
    */
-  showError(message) {
+  private showError(message: string): void {
     const errorEl = document.getElementById('error');
     const loadingEl = document.getElementById('loading');
     
@@ -333,7 +341,7 @@ export class AppController {
   /**
    * Show success message for refresh
    */
-  showRefreshSuccess() {
+  private showRefreshSuccess(): void {
     const successMsg = document.createElement('div');
     successMsg.className = 'refresh-success';
     successMsg.textContent = '✅ Data refreshed successfully';
@@ -363,7 +371,7 @@ export class AppController {
   /**
    * Update statistics display
    */
-  updateStats() {
+  private updateStats(): void {
     const state = stateManager.getState();
     
     // Update entity count
@@ -380,15 +388,15 @@ export class AppController {
     
     // Update current center
     const currentCenterEl = document.getElementById('current-center');
-    if (currentCenterEl) {
-      currentCenterEl.textContent = `Center: ${state.centerEntity || 'None'}`;
+    if (currentCenterEl && state.centerEntity) {
+      currentCenterEl.textContent = `Center: ${state.centerEntity.name || 'None'}`;
     }
   }
 
   /**
    * Handle window resize
    */
-  handleResize() {
+  private handleResize(): void {
     // Emit resize event for graph to handle
     eventBus.emit('window-resized', {
       width: window.innerWidth,
@@ -399,7 +407,19 @@ export class AppController {
   /**
    * Get application status
    */
-  getAppStatus() {
+  getAppStatus(): {
+    initialized: boolean;
+    isLoading: boolean;
+    hasError: boolean;
+    error: string | null;
+    dataLoaded: boolean;
+    entitiesCount: number;
+    relationsCount: number;
+    filteredEntitiesCount: number;
+    filteredRelationsCount: number;
+    centerEntity: any;
+    rootEntity: string | null;
+  } {
     const state = stateManager.getState();
     return {
       initialized: this.initialized,
