@@ -7,6 +7,20 @@ echo "🚀 Setting up Memory Graph Explorer development environment..."
 # Ensure we're in the workspace directory
 cd /workspaces/MemoryGraphExplorer || cd /workspace/MemoryGraphExplorer || exit 1
 
+# Install uv for Spec Kit (fast Python package manager)
+echo "📦 Installing uv package manager..."
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+
+# Add uv to PATH permanently for future sessions
+if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' ~/.bashrc 2>/dev/null; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+fi
+
+# Install Spec Kit CLI
+echo "🌱 Installing Spec Kit CLI..."
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git || echo "⚠️ Spec Kit installation failed (optional)"
+
 # Install backend dependencies
 echo "📦 Installing backend MCP server dependencies..."
 cd backend/mcp-server

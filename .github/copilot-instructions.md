@@ -2,148 +2,219 @@
 
 A containerized knowledge graph visualization system with hybrid MCP (Model Context Protocol) architecture. Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.
 
-## Working Effectively
+## General Guidelines
 
-### Development Container (RECOMMENDED FOR DEVELOPMENT)
-- **GitHub Codespaces**: Click "Create codespace on main" - automatic setup in ~3-5 minutes
-- **Local VS Code**: `F1` → "Dev Containers: Reopen in Container" - automatic setup
-- **Benefits**: Isolated environment, all dependencies pre-installed, consistent across machines
-- **Post-create script**: Automatically runs `npm install`, builds TypeScript, installs Python deps
-- **See**: `.devcontainer/README.md` for detailed documentation
+- **Language**: All documentation, comments, and commit messages MUST be in English
+- **Code Style**: Follow existing patterns in the codebase
+- **Testing**: Always run tests after changes
 
-### Quick Start (Alternative - Direct Local Setup)
-- **Local Development Setup (FASTEST if devcontainer not available)**:
-  - `cd backend/mcp-server && npm install` -- takes ~8 seconds. NEVER CANCEL.
-  - `pip3 install --user --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt` -- takes ~30 seconds if SSL issues exist. NEVER CANCEL.
-  - Start MCP server: `cd backend/mcp-server && MEMORY_FILE_PATH="../../data/memory-test.json" PORT=3001 node dist/index.js`
-  - Start web server: `cd frontend/web_viewer && python server.py --host 0.0.0.0 --port 8080 --mcp-url http://localhost:3001/mcp`
+## 🏗️ Architecture Overview (CONSOLIDATED CONTAINER)
 
-### Docker Setup (Production)
-- **Production**: `docker compose up` -- **WARNING: May fail due to SSL certificate issues in sandboxed environments**
-- **Development**: `docker compose -f docker-compose.dev.yml up` 
-- **Build Time**: 5-15 minutes depending on network. NEVER CANCEL. Set timeout to 30+ minutes.
-- **Known Issue**: Docker builds may fail with SSL certificate errors. Use local development setup or devcontainer as fallback.
+**IMPORTANT**: The system uses a **single consolidated container** containing both the MCP Server (Node.js) and Web UI (Python Flask).
+
+**Container Structure:**
+
+- **MCP Server** (Node.js) - runs internally on port 3000
+- **Flask Web UI** (Python) - exposed on port 8080
+- Flask proxies `/mcp` requests to the internal MCP Server
+- Only port 8080 is exposed externally
 
 ### Port Configuration
-- **Production**: MCP server (port 3000), Web UI (port 8080)
-- **Development**: MCP server (port 3001), Web UI (port 8081)  
-- **Local Development**: MCP server (port 3001), Web UI (port 8080)
 
-## Testing & Validation
+| Environment     | Host Port   | Container Web | Container MCP   | MCP Access                            |
+| --------------- | ----------- | ------------- | --------------- | ------------------------------------- |
+| **Production**  | 8080        | 8080          | 3000 (internal) | `http://localhost:8080/mcp` (proxied) |
+| **Development** | 8081        | 8080          | 3000 (internal) | `http://localhost:8081/mcp` (proxied) |
+| **Local Dev**   | 8080 + 3001 | 8080          | 3001            | `http://localhost:3001/mcp` (direct)  |
 
-### Run Tests (ALWAYS do this after changes)
-- **Full test suite**: `node tests/run-tests.js` -- takes ~0.5 seconds. NEVER CANCEL.
-- **Feature tests**: `npm run test:features` -- requires services to be running first
-- **Individual tests**: `node tests/test-api-endpoints.js`, `node tests/test-mcp-http.js`
+## 🚀 Working Effectively
 
-### Manual Validation Steps
-- **ALWAYS test after code changes**: Start services, run test suite, verify API endpoints
-- **API Health Check**: `curl http://localhost:8080/api/health` should return full knowledge graph data
-- **MCP Server Check**: `curl -H "Accept: application/json, text/event-stream" http://localhost:3001/mcp` 
-- **Web Interface**: Navigate to `http://localhost:8080` (D3.js may be blocked but UI structure should load)
+### Development Container (RECOMMENDED)
 
-### Critical Test Scenarios
-- **Knowledge Graph Operations**: Create entity, add relations, search nodes, validate integrity
-- **MCP Protocol**: Initialize session, list tools (should show 15 tools), call tools with proper JSON-RPC format
-- **Web APIs**: Test all 5 endpoints (/api/graph, /api/search, /api/entity, /api/node-relations, /api/health)
+- **GitHub Codespaces**: "Create codespace on main" - automatic setup in ~3-5 minutes
+- **Local VS Code**: `F1` → "Dev Containers: Reopen in Container" - automatic setup
+- **Benefits**: Isolated environment, all dependencies pre-installed, consistent
+- **Spec Kit**: Automatically installed for structured AI-assisted development
+- **See**: `.devcontainer/README.md` for details
 
-## Architecture & Components
+### Quick Start (Local Development)
 
-### Core Components
-- **Backend**: TypeScript MCP server (`/backend/mcp-server/`) - 15 memory tools for GitHub Copilot
-- **Frontend**: Python Flask + D3.js web viewer (`/frontend/web_viewer/`) - interactive visualization
-- **Data**: JSON-based knowledge graph (`/data/memory-test.json` for dev, external file for prod)
-- **Tests**: Node.js test scripts (`/tests/`) - comprehensive API and MCP validation
-
-### MCP Tools Available (15 total)
-- `create_entities`, `create_relations`, `add_observations`
-- `delete_entities`, `delete_relations`, `delete_observations`  
-- `read_graph`, `search_graph`, `open_nodes`, `get_node_relations`
-- `rename_entity`, `validate_integrity`, `list_types`, `create_type`, `delete_type`
-
-## Build Process
-
-### Local Development (Recommended)
 ```bash
-# Backend (Node.js) - 8 seconds
-cd backend/mcp-server
-npm install --no-fund --no-audit
+# Backend (Node.js) - ~8 seconds
+cd backend/mcp-server && npm install --no-fund --no-audit
 
-# Frontend (Python) - 30 seconds  
-pip3 install --user --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
+# Frontend (Python) - ~30 seconds
+pip install -r requirements.txt
+
+# Start MCP Server (Terminal 1)
+cd backend/mcp-server && MEMORY_FILE_PATH="../../data/memory-test.json" PORT=3001 node dist/index.js
+
+# Start Web Server (Terminal 2)
+cd frontend/web_viewer && python server.py --host 0.0.0.0 --port 8080 --mcp-url http://localhost:3001/mcp
 ```
 
-### TypeScript Build
-- **Auto-build**: Runs automatically via `npm install` (prepare script)
-- **Manual build**: `cd backend/mcp-server && npm run build`
-- **Watch mode**: `cd backend/mcp-server && npm run watch`
+### Docker Setup
 
-## Common Issues & Solutions
+```bash
+# Production (Host Port 8080)
+docker compose up
 
-### SSL Certificate Issues
-- **Docker builds fail**: Use local development setup instead
-- **Pip install fails**: Add `--trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org`
-- **npm install fails**: Usually works locally, use Docker as fallback
+# Development (Host Port 8081)
+docker compose -f docker-compose.dev.yml up
+```
 
-### D3.js Visualization Issues  
-- **D3.js blocked**: Expected in sandboxed environments, API functionality remains intact
-- **Web interface loads with error**: Normal - backend APIs work correctly for programmatic access
+**⚠️ Note**: Docker builds can take 5-15 minutes. NEVER cancel.
 
-### Service Connection Issues
-- **Tests fail with ECONNREFUSED**: Start services first (MCP server on port 3001, web server on port 8080)
-- **MCP session errors**: Ensure proper headers: `Accept: application/json, text/event-stream`
+## 🧪 Testing & Validation
 
-## Development Workflow
+### Running Tests (ALWAYS after changes)
 
-### Making Changes
-1. **Start services locally** (fastest development cycle)
-2. **Run full test suite**: `node tests/run-tests.js` 
-3. **Test specific functionality**: Use individual test scripts
-4. **Validate manually**: Check health endpoint, test UI, verify MCP tools
-5. **ALWAYS test real scenarios**: Create entities, add relations, search, validate integrity
+```bash
+# Full test suite (~0.5 seconds)
+node tests/run-tests.js
 
-### File Structure Reference
+# Individual tests
+node tests/test-api-endpoints.js
+node tests/test-mcp-http.js
+```
+
+### Manual Validation
+
+```bash
+# Health Check (should return Knowledge Graph)
+curl http://localhost:8080/api/health
+
+# Check MCP Endpoint
+curl -X POST http://localhost:8080/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test"}}}'
+```
+
+## 🔧 Core Components
+
+### Backend: MCP Server (`/backend/mcp-server/`)
+
+TypeScript-based MCP Server with 15 Memory Tools:
+
+| Tool                                                         | Description                           |
+| ------------------------------------------------------------ | ------------------------------------- |
+| `create_entities`                                            | Create new entities                   |
+| `create_relations`                                           | Create relationships between entities |
+| `add_observations`                                           | Add observations to entities          |
+| `delete_entities`, `delete_relations`, `delete_observations` | Delete operations                     |
+| `read_graph`                                                 | Read entire graph                     |
+| `search_graph`                                               | Search in graph                       |
+| `open_nodes`                                                 | Open specific nodes                   |
+| `get_node_relations`                                         | Get relations of a node               |
+| `rename_entity`                                              | Rename entity                         |
+| `validate_integrity`                                         | Validate graph integrity              |
+| `list_types`, `create_type`, `delete_type`                   | Type management                       |
+
+### Frontend: Web UI (`/frontend/web_viewer/`)
+
+Python Flask Server with D3.js visualization:
+
+- **API Endpoints**: `/api/graph`, `/api/search`, `/api/entity`, `/api/node-relations`, `/api/health`
+- **MCP Proxy**: `/mcp` - forwards requests to internal MCP Server
+- **Static Files**: HTML, CSS, JavaScript for interactive graph visualization
+
+### Data Storage
+
+- **Development**: `/data/memory-test.json`
+- **Production**: External volume (e.g., `C:/workspace/Journal/memory.json`)
+
+## 📁 File Structure
+
 ```
 MemoryGraphExplorer/
-├── backend/mcp-server/          # TypeScript MCP server
-│   ├── src/tools/              # Individual MCP tool implementations
-│   ├── index.ts                # Main server entry point
-│   └── package.json            # Node.js dependencies
-├── frontend/web_viewer/        # Python Flask web server
-│   ├── server.py              # Main Flask application
-│   ├── modules/               # Frontend JavaScript modules  
-│   └── index.html             # Web interface
-├── tests/                     # Test scripts
-│   ├── run-tests.js          # Master test runner
-│   └── test-*.js             # Individual test suites
-├── data/memory-test.json      # Test knowledge graph data
-├── docker-compose.yml         # Production deployment
-└── docker-compose.dev.yml     # Development deployment
+├── .devcontainer/              # Dev Container configuration
+├── .github/
+│   ├── copilot-instructions.md # This file
+│   ├── agents/                 # Spec Kit agent definitions
+│   └── prompts/                # Spec Kit prompt templates
+├── .specify/                   # Spec Kit project structure
+│   ├── memory/                 # Constitution and context
+│   ├── scripts/                # Spec Kit helper scripts
+│   └── templates/              # Spec/Plan/Tasks templates
+├── backend/mcp-server/         # TypeScript MCP Server
+│   ├── src/
+│   │   ├── tools/              # 15 MCP tool implementations
+│   │   ├── storage/            # Persistence layer
+│   │   └── types/              # TypeScript types
+│   ├── index.ts                # Server entry point
+│   └── package.json
+├── frontend/web_viewer/        # Python Flask + D3.js
+│   ├── server.py               # Flask application
+│   ├── modules/                # JavaScript ES6 modules
+│   │   ├── core/               # App controller, state, events
+│   │   ├── features/           # Filter, search, legend, info panel
+│   │   ├── graph/              # D3.js graph rendering
+│   │   └── services/           # MCP client, color service
+│   └── index.html
+├── tests/                      # Test scripts
+├── data/                       # Knowledge graph data
+├── docs/                       # Architecture documentation
+├── Dockerfile                  # Consolidated image
+├── docker-compose.yml          # Production
+├── docker-compose.dev.yml      # Development
+└── start-consolidated.sh       # Container startup script
 ```
 
-## Validation Requirements
+## 🔍 Common Issues & Solutions
+
+### Service Connection Issues
+
+- **ECONNREFUSED**: Start services first
+- **MCP Session Errors**: Check headers: `Accept: application/json, text/event-stream`
+- **Proxy Issues**: `/mcp` endpoint uses internal proxy to port 3000
+
+### Docker Issues
+
+- **SSL Errors**: Use local development instead
+- **Long Build Times**: Normal (5-15 min), never cancel
+
+### D3.js Issues
+
+- **Blocked in Sandbox**: Normal - API still works
+
+## 📋 Spec Kit Integration
+
+This project uses [Spec Kit](https://github.com/github/spec-kit) for structured, AI-assisted development.
+
+### Available Commands
+
+- `/speckit.constitution` - Define project principles
+- `/speckit.specify` - Specify features
+- `/speckit.plan` - Create implementation plan
+- `/speckit.tasks` - Generate task list
+- `/speckit.implement` - Execute tasks
+
+### Resuming After Breaks
+
+1. Read `.specify/memory/constitution.md`
+2. Check current specs in `.specify/specs/`
+3. Review open tasks
+
+## ✅ Validation Requirements
 
 ### Before Completing Any Task
-- **CRITICAL**: Run `node tests/run-tests.js` - must complete in ~0.5 seconds with 2/2 tests passing
-- **API Validation**: `curl http://localhost:8080/api/health` - must return knowledge graph with entities and relations
-- **MCP Validation**: Test GitHub Copilot integration with available tools
-- **Manual Testing**: Exercise actual user workflows (search, create entities, explore relations)
+
+1. **Tests**: `node tests/run-tests.js` - 2/2 tests must pass
+2. **Health Check**: `curl http://localhost:8080/api/health` - must return graph
+3. **Manual Testing**: Test real workflows (Search, Create, Explore)
 
 ### Performance Expectations
-- **Local builds**: Node.js ~8 seconds, Python ~30 seconds. NEVER CANCEL.
-- **Tests**: Full suite ~0.5 seconds. Individual tests ~0.1-0.2 seconds.
-- **Service startup**: ~2-5 seconds for both MCP server and web server.
-- **Docker builds**: 5-15 minutes (may fail due to SSL issues). NEVER CANCEL. Set timeout 30+ minutes.
 
-## NPM Scripts Available
-- `npm start` - Start production with docker compose
-- `npm run build` - Build containers  
-- `npm run test:features` - Run feature tests (requires running services)
-- `npm run logs` - View container logs
+- **Local Builds**: Node ~8s, Python ~30s
+- **Tests**: ~0.5 seconds
+- **Service Startup**: ~2-5 seconds
+- **Docker Build**: 5-15 minutes
 
-## Critical Reminders
-- **NEVER CANCEL long-running operations** - builds may take 15+ minutes
-- **Always use trusted hosts for pip** in restricted environments
-- **Test locally first** before attempting Docker builds
-- **Validate every change** with the complete test suite
-- **Services must run before tests** - start MCP server and web server first
+## 🎯 Critical Reminders
+
+- **NEVER** cancel long-running operations
+- **ALWAYS** run tests after changes
+- **Services must be running** before executing tests
+- **One Container** - MCP is internal, Web UI is exposed
+- **/mcp Endpoint** - uses proxy, not direct MCP access in Docker
