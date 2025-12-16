@@ -342,7 +342,7 @@ export class AppController {
       top: 80px;
       right: 20px;
       background: var(--success-color);
-      color: white;
+      color: var(--surface-color);
       padding: 12px 20px;
       border-radius: 4px;
       z-index: 1000;
