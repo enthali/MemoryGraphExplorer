@@ -10,10 +10,11 @@ A modern, containerized knowledge graph visualization and management system with
 - 🔍 **Smart Search & Filtering** - Find nodes and relationships quickly  
 - 📊 **Entity Relationship Explorer** - Deep dive into connections between entities
 - 🚀 **Real-time Graph Updates** - Live data through unified HTTP transport
-- 🎨 **Modern Clean UI** - Beautiful, responsive web interface
+- 🎨 **Modern Clean UI** - Beautiful, responsive web interface built with TypeScript
 - ⚡ **High Performance** - Direct StreamableHTTP MCP integration
 - 🤖 **GitHub Copilot Integration** - Access all memory tools via VS Code
 - 📦 **One-Command Deployment** - `docker-compose up` and you're running!
+- 🔒 **Type-Safe Frontend** - Full TypeScript implementation with comprehensive type definitions
 
 ## 🏗️ Architecture
 
@@ -180,13 +181,46 @@ MemoryGraphExplorer/
 │   ├── web_viewer/
 │   │   ├── server.py          # Flask server with HTTP client
 │   │   ├── index.html         # Web interface
-│   │   ├── main.js            # Frontend JavaScript
-│   │   └── styles.css         # Styling
+│   │   ├── main.ts            # TypeScript app coordinator
+│   │   ├── src/types/         # TypeScript type definitions
+│   │   ├── modules/           # Modular TypeScript components
+│   │   │   ├── core/          # State, data, event management
+│   │   │   ├── graph/         # D3.js graph rendering
+│   │   │   ├── features/      # Search, filter, panels
+│   │   │   └── services/      # MCP client, utilities
+│   │   ├── styles.css         # Styling
+│   │   ├── tsconfig.json      # TypeScript configuration
+│   │   └── package.json       # Frontend dependencies
 │   └── Dockerfile.http        # Web server container
 ├── docker-compose.yml         # Complete orchestration
 ├── mcp.json                   # VS Code MCP configuration
 └── README.md                  # This file
 ```
+
+### TypeScript Frontend Architecture
+
+The frontend is built entirely with **TypeScript** for type safety and better developer experience:
+
+**Type System** (`src/types/`):
+- `graph.ts` - Entity, Relation, GraphData from MCP server
+- `d3-graph.ts` - GraphNode, GraphLink with D3 SimulationNodeDatum extensions  
+- `events.ts` - Type-safe EventMap for pub/sub (15+ event types)
+- `state.ts` - AppState interface with nested data structures
+- `renderer.ts` - Graph visualization configuration
+- `global.d.ts` - Window and d3 global type declarations
+
+**Modular Architecture**:
+- **Core** - State management, data loading, event bus, app coordination
+- **Graph** - D3.js rendering, interactions, and graph state management
+- **Features** - Search, filtering, info panel, legend, theme management
+- **Services** - MCP client for server communication, color management
+
+**Build & Development**:
+- TypeScript compilation configured via `tsconfig.json`
+- Vite for fast development and optimized production builds
+- Type checking ensures correctness across the entire frontend
+
+For detailed architecture documentation, see [Frontend Architecture](docs/design/frontend-architecture.md).
 
 ## 🔧 Configuration
 
@@ -250,7 +284,7 @@ Memory Graph Explorer is a production-ready, containerized knowledge graph syste
 
 ---
 
-**Built with Express.js, Flask, MCP StreamableHTTP, and Docker** 🚀
+**Built with TypeScript, Express.js, Flask, D3.js, MCP StreamableHTTP, and Docker** 🚀
 
 ## 🙏 Acknowledgments
 
