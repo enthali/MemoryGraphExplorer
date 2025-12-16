@@ -8,6 +8,9 @@ import { stateManager } from '../core/state-manager.js';
 import { colorService } from '../services/color-service.js';
 
 export class LegendManager {
+  private legendElement: HTMLElement | null;
+  private isVisible: boolean;
+
   constructor() {
     this.legendElement = null;
     this.isVisible = true;
@@ -59,10 +62,8 @@ export class LegendManager {
 
   /**
    * Render legend with entity types and colors
-   * @param {Array} entityTypes - Array of entity type names
-   * @param {Object} colorMap - Color mapping object
    */
-  renderLegend(entityTypes, colorMap) {
+  renderLegend(entityTypes: string[], colorMap: Map<string, string> | Record<string, string>): void {
     if (!this.legendElement || !entityTypes || !colorMap) return;
 
     console.log('🏷️ Rendering legend for entity types:', entityTypes);

@@ -3,11 +3,28 @@
  * Handles pure rendering logic without state management
  */
 
+import type { GraphData, GraphNode, GraphLink, RendererOptions } from '../../src/types/index.js';
+
 // D3.js is loaded globally via CDN, so we use the global d3 object
 // No import needed - d3 is available as a global variable
 
 export class GraphRenderer {
-  constructor(containerSelector, options = {}) {
+  private container: any;
+  private options: RendererOptions & Record<string, any>;
+  private svg: any;
+  private simulation: any;
+  private nodes: GraphNode[];
+  private links: GraphLink[];
+  private centerEntity: string | null;
+  private nodeGroup: any;
+  private linkGroup: any;
+  private labelGroup: any;
+  private tooltip: any;
+  private nodeElements: any;
+  private linkElements: any;
+  private labelElements: any;
+
+  constructor(containerSelector: string, options: Partial<RendererOptions> = {}) {
     this.container = d3.select(containerSelector);
     this.options = {
       width: options.width || 800,
@@ -17,7 +34,7 @@ export class GraphRenderer {
       onNodeLeave: options.onNodeLeave || (() => {}),
       onEdgeHover: options.onEdgeHover || (() => {}),
       onEdgeLeave: options.onEdgeLeave || (() => {}),
-      entityTypeColorMap: options.entityTypeColorMap || {},
+      entityTypeColorMap: options.entityTypeColorMap || new Map(),
       ...options
     };
 
@@ -115,10 +132,10 @@ export class GraphRenderer {
 
   /**
    * Update graph with new data
-   * @param {Object} data - Graph data with entities and relations
-   * @param {string} centerEntity - Name of the center entity
+  /**
+   * Update graph visualization
    */
-  updateGraph(data, centerEntity = null) {
+  updateGraph(data: GraphData, centerEntity: string | null = null): void {
     console.log('🎨 Updating graph visualization:', data);
     
     this.centerEntity = centerEntity;
