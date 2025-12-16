@@ -362,8 +362,17 @@ export class GraphRenderer {
    * Get node color based on entity type
    */
   getNodeColor(node) {
-    const colorMap = this.options.entityTypeColorMap || {};
-    return colorMap[node.entityType] || this.getCSSVariable('--text-secondary', '#64748b');
+    const colorMap = this.options.entityTypeColorMap;
+    if (!colorMap) {
+      return this.getCSSVariable('--text-secondary', '#64748b');
+    }
+    
+    // Handle both Map and plain object
+    const color = colorMap instanceof Map 
+      ? colorMap.get(node.entityType)
+      : colorMap[node.entityType];
+    
+    return color || this.getCSSVariable('--text-secondary', '#64748b');
   }
 
   /**

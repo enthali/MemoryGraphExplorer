@@ -87,7 +87,10 @@ export class LegendManager {
 
     // Create legend items for each entity type
     entityTypes.forEach(entityType => {
-      const color = colorMap[entityType] || 'var(--text-muted)';
+      // Handle both Map and plain object
+      const color = colorMap instanceof Map 
+        ? colorMap.get(entityType) || 'var(--text-muted)'
+        : colorMap[entityType] || 'var(--text-muted)';
       const legendItem = this.createLegendItem(entityType, color);
       itemsContainer.appendChild(legendItem);
     });

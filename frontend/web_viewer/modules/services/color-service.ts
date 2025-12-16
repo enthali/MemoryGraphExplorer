@@ -91,8 +91,9 @@ export class ColorService {
       colorMap: this.entityTypeColorMap
     });
 
-    // Emit color map updated event
+    // Emit color map updated event with entity types
     eventBus.emit('color-map-updated', {
+      entityTypes: entityTypes,
       colorMap: this.entityTypeColorMap
     });
   }

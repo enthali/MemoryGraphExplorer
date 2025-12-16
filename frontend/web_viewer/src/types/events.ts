@@ -84,7 +84,10 @@ export interface EventMap {
   'state-reset': any;
   
   // Color events
-  'color-map-updated': { colorMap: Map<string, string> };
+  'color-map-updated': { entityTypes: string[]; colorMap: Map<string, string> };
+  
+  // Legend events
+  'legend-toggle': { isVisible: boolean };
 }
 
 export type EventName = keyof EventMap;
