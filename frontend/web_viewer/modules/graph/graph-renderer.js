@@ -72,7 +72,7 @@ export class GraphRenderer {
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,-5L10,0L0,5')
-      .attr('fill', '#64748b');
+      .attr('fill', this.getCSSVariable('--link-color', '#64748b'));
     
     // Add zoom behavior
     const zoom = d3.zoom()
@@ -187,7 +187,7 @@ export class GraphRenderer {
     
     // Add link line
     linkEnter.append('line')
-      .attr('stroke', '#64748b')
+      .attr('stroke', this.getCSSVariable('--link-color', '#64748b'))
       .attr('stroke-width', 2)
       .attr('stroke-opacity', 0.6)
       .attr('marker-end', 'url(#arrow)')
@@ -223,7 +223,7 @@ export class GraphRenderer {
     nodeEnter.append('circle')
       .attr('r', d => this.getNodeRadius(d))
       .attr('fill', d => this.getNodeColor(d))
-      .attr('stroke', d => d.isCenter ? '#1e293b' : '#ffffff')
+      .attr('stroke', d => d.isCenter ? this.getCSSVariable('--node-label-color', '#1e293b') : this.getCSSVariable('--node-stroke-color', '#ffffff'))
       .attr('stroke-width', d => d.isCenter ? 4 : 2)
       .attr('stroke-opacity', 0.8);
     
@@ -248,7 +248,7 @@ export class GraphRenderer {
     this.nodeElements.select('circle')
       .attr('r', d => this.getNodeRadius(d))
       .attr('fill', d => this.getNodeColor(d))
-      .attr('stroke', d => d.isCenter ? '#1e293b' : '#ffffff')
+      .attr('stroke', d => d.isCenter ? this.getCSSVariable('--node-label-color', '#1e293b') : this.getCSSVariable('--node-stroke-color', '#ffffff'))
       .attr('stroke-width', d => d.isCenter ? 4 : 2);
   }
 
@@ -271,7 +271,7 @@ export class GraphRenderer {
       .attr('dy', '0.35em')
       .attr('font-size', '12px')
       .attr('font-weight', d => d.isCenter ? 'bold' : 'normal')
-      .attr('fill', '#1e293b')
+      .attr('fill', this.getCSSVariable('--node-label-color', '#1e293b'))
       .attr('pointer-events', 'none');
     
     // Update all labels
@@ -346,7 +346,17 @@ export class GraphRenderer {
    */
   getNodeColor(node) {
     const colorMap = this.options.entityTypeColorMap || {};
-    return colorMap[node.entityType] || '#64748b';
+    return colorMap[node.entityType] || this.getCSSVariable('--text-secondary', '#64748b');
+  }
+
+  /**
+   * Get CSS variable value from root or fallback
+   */
+  getCSSVariable(varName, fallback) {
+    if (typeof window === 'undefined') return fallback;
+    const root = document.documentElement;
+    const value = getComputedStyle(root).getPropertyValue(varName).trim();
+    return value || fallback;
   }
 
   /**
@@ -430,7 +440,7 @@ export class GraphRenderer {
   selectNode(nodeId) {
     // Remove previous selection styling
     this.nodeElements.select('circle')
-      .attr('stroke', d => d.isCenter ? '#1e293b' : '#ffffff')
+      .attr('stroke', d => d.isCenter ? this.getCSSVariable('--node-label-color', '#1e293b') : this.getCSSVariable('--node-stroke-color', '#ffffff'))
       .attr('stroke-width', d => d.isCenter ? 4 : 2);
     
     // Add selection styling to the selected node
@@ -438,7 +448,7 @@ export class GraphRenderer {
       this.nodeElements
         .filter(d => d.id === nodeId)
         .select('circle')
-        .attr('stroke', '#f59e0b')
+        .attr('stroke', this.getCSSVariable('--accent-color', '#f59e0b'))
         .attr('stroke-width', 3);
     }
   }

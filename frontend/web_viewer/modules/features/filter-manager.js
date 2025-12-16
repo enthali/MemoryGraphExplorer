@@ -292,12 +292,12 @@ export class FilterManager {
     
     if (totalSelected === 0) {
       filterCount.textContent = '0';
-      filterCount.style.background = '#ef4444'; // error color
+      filterCount.style.background = 'var(--error-color)';
     } else if (totalSelected === totalAvailable) {
       filterCount.textContent = '';
     } else {
       filterCount.textContent = totalSelected.toString();
-      filterCount.style.background = '#2563eb'; // primary color
+      filterCount.style.background = 'var(--primary-color)';
     }
   }
 
@@ -320,7 +320,7 @@ export class FilterManager {
    */
   getEntityTypeColorDot(entityType) {
     // Use color from ColorService if available, otherwise fallback
-    const color = this.currentColorMap[entityType] || colorService.getEntityTypeColor(entityType) || '#6b7280';
+    const color = this.currentColorMap[entityType] || colorService.getEntityTypeColor(entityType) || 'var(--text-muted)';
     
     return `<span class="color-dot" style="background:${color};"></span>`;
   }

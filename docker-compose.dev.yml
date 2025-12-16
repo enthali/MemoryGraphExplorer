@@ -12,10 +12,8 @@ services:
     ports:
       - "8081:8080"  # Development: Web UI on host port 8081 (MCP internal on 3000)
     volumes:
-      # Mount entire data directory
-      # NOTE: Using Windows host path for Docker Desktop compatibility
-      # TODO: Make this configurable for Codespaces/Azure deployment
-      - C:/workspace/web_Projects/MemoryGraphExplorer/data:/app/data
+      # Mount entire data directory from Windows host (WSL2 path format)
+      - /mnt/c/workspace/web_Projects/MemoryGraphExplorer/data:/app/data
     environment:
       - NODE_ENV=development
       - FLASK_ENV=development

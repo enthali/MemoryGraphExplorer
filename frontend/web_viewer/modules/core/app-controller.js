@@ -341,13 +341,13 @@ export class AppController {
       position: fixed;
       top: 80px;
       right: 20px;
-      background: #4CAF50;
-      color: white;
+      background: var(--success-color);
+      color: var(--surface-color);
       padding: 12px 20px;
       border-radius: 4px;
       z-index: 1000;
       font-size: 14px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      box-shadow: var(--shadow-lg);
     `;
     
     document.body.appendChild(successMsg);
