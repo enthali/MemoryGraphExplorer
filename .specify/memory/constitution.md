@@ -41,7 +41,7 @@ Memory Graph Explorer is a knowledge graph visualization system that enables Git
 ### Code Quality
 - TypeScript for Backend (MCP Server) - strict typing
 - Python for Web Server - Flask with clear structure
-- ES6 Modules for Frontend - modern JavaScript patterns
+- TypeScript for Frontend - strict typing, ES6 modules
 - No Magic Numbers - all configuration via environment variables
 
 ### Documentation Requirements
