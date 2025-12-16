@@ -54,7 +54,7 @@ export class LegendManager {
     }
 
     // Initially empty, will be populated when data loads
-    this.legendElement.innerHTML = '<span style="color: #6b7280; font-size: 12px;">Loading...</span>';
+    this.legendElement.innerHTML = '<span style="color: var(--text-muted); font-size: 12px;">Loading...</span>';
   }
 
   /**
@@ -73,7 +73,7 @@ export class LegendManager {
     // Create legend title
     const titleElement = document.createElement('div');
     titleElement.className = 'legend-title';
-    titleElement.innerHTML = '<strong style="font-size: 12px; color: #374151;">Entity Types</strong>';
+    titleElement.innerHTML = '<strong style="font-size: 12px; color: var(--text-primary);">Entity Types</strong>';
     this.legendElement.appendChild(titleElement);
 
     // Create legend items container
@@ -86,7 +86,7 @@ export class LegendManager {
 
     // Create legend items for each entity type
     entityTypes.forEach(entityType => {
-      const color = colorMap[entityType] || '#6b7280';
+      const color = colorMap[entityType] || 'var(--text-muted)';
       const legendItem = this.createLegendItem(entityType, color);
       itemsContainer.appendChild(legendItem);
     });
@@ -114,11 +114,11 @@ export class LegendManager {
       align-items: center;
       gap: 4px;
       padding: 2px 6px;
-      background: white;
-      border: 1px solid #e5e7eb;
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
       border-radius: 12px;
       font-size: 11px;
-      color: #374151;
+      color: var(--text-primary);
       cursor: pointer;
       transition: all 0.2s;
       user-select: none;
@@ -163,14 +163,14 @@ export class LegendManager {
 
     // Add hover effects
     itemElement.addEventListener('mouseenter', () => {
-      itemElement.style.backgroundColor = '#f3f4f6';
+      itemElement.style.backgroundColor = 'var(--hover-bg)';
       itemElement.style.borderColor = color;
       itemElement.style.transform = 'scale(1.02)';
     });
 
     itemElement.addEventListener('mouseleave', () => {
-      itemElement.style.backgroundColor = 'white';
-      itemElement.style.borderColor = '#e5e7eb';
+      itemElement.style.backgroundColor = 'var(--surface-color)';
+      itemElement.style.borderColor = 'var(--border-color)';
       itemElement.style.transform = 'scale(1)';
     });
 
@@ -268,7 +268,7 @@ export class LegendManager {
    */
   clear() {
     if (this.legendElement) {
-      this.legendElement.innerHTML = '<span style="color: #6b7280; font-size: 12px;">No data</span>';
+      this.legendElement.innerHTML = '<span style="color: var(--text-muted); font-size: 12px;">No data</span>';
     }
   }
 
@@ -329,8 +329,8 @@ export class LegendManager {
         border-radius: 50%;
         background-color: ${color};
         cursor: pointer;
-        border: 1px solid white;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        border: 1px solid var(--surface-color);
+        box-shadow: var(--shadow);
       `;
       
       compactContainer.appendChild(dot);

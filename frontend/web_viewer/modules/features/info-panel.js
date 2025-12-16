@@ -152,9 +152,9 @@ export class InfoPanelManager {
         // Style for better readability
         li.style.marginBottom = '8px';
         li.style.padding = '8px';
-        li.style.backgroundColor = '#f8fafc';
+        li.style.backgroundColor = 'var(--background-color)';
         li.style.borderRadius = '4px';
-        li.style.borderLeft = '3px solid #e2e8f0';
+        li.style.borderLeft = '3px solid var(--border-color)';
         
         observationsList.appendChild(li);
       });
@@ -162,7 +162,7 @@ export class InfoPanelManager {
       const li = document.createElement('li');
       li.textContent = 'No observations available';
       li.style.fontStyle = 'italic';
-      li.style.color = '#6b7280';
+      li.style.color = 'var(--text-muted)';
       li.style.padding = '8px';
       observationsList.appendChild(li);
     }
@@ -197,7 +197,7 @@ export class InfoPanelManager {
         const typeHeader = document.createElement('div');
         typeHeader.className = 'connection-type-header';
         typeHeader.innerHTML = `
-          <h5 style="margin: 8px 0 4px 0; color: #374151; font-size: 14px; font-weight: 600;">
+          <h5 style="margin: 8px 0 4px 0; color: var(--text-primary); font-size: 14px; font-weight: 600;">
             🔗 ${relationType} (${typeConnections.length})
           </h5>
         `;
@@ -213,7 +213,7 @@ export class InfoPanelManager {
       const noConnectionsDiv = document.createElement('div');
       noConnectionsDiv.className = 'no-connections';
       noConnectionsDiv.innerHTML = `
-        <p style="font-style: italic; color: #6b7280; padding: 16px; text-align: center; background: #f8fafc; border-radius: 4px; margin: 8px 0;">
+        <p style="font-style: italic; color: var(--text-muted); padding: 16px; text-align: center; background: var(--background-color); border-radius: 4px; margin: 8px 0;">
           No connections visible in current view
         </p>
       `;
@@ -257,10 +257,10 @@ export class InfoPanelManager {
     const directionLabel = isOutgoing ? 'to' : 'from';
     
     connectionDiv.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 8px; padding: 8px; margin: 4px 0; background: white; border-radius: 4px; border: 1px solid #e5e7eb; cursor: pointer; transition: background-color 0.2s;">
-        <span style="font-size: 12px; color: #6b7280;">${direction}</span>
-        <span style="font-size: 12px; color: #6b7280;">${directionLabel}</span>
-        <span class="connected-entity" data-entity="${connectedEntity}" style="font-weight: 500; color: #1f2937; flex: 1; text-decoration: underline;">${connectedEntity}</span>
+      <div style="display: flex; align-items: center; gap: 8px; padding: 8px; margin: 4px 0; background: var(--surface-color); border-radius: 4px; border: 1px solid var(--border-color); cursor: pointer; transition: background-color 0.2s;">
+        <span style="font-size: 12px; color: var(--text-muted);">${direction}</span>
+        <span style="font-size: 12px; color: var(--text-muted);">${directionLabel}</span>
+        <span class="connected-entity" data-entity="${connectedEntity}" style="font-weight: 500; color: var(--text-primary); flex: 1; text-decoration: underline;">${connectedEntity}</span>
       </div>
     `;
 
@@ -271,11 +271,11 @@ export class InfoPanelManager {
 
     // Add hover effects
     connectionDiv.addEventListener('mouseenter', () => {
-      connectionDiv.style.backgroundColor = '#f3f4f6';
+      connectionDiv.style.backgroundColor = 'var(--hover-bg)';
     });
 
     connectionDiv.addEventListener('mouseleave', () => {
-      connectionDiv.style.backgroundColor = 'white';
+      connectionDiv.style.backgroundColor = 'var(--surface-color)';
     });
 
     return connectionDiv;
@@ -317,13 +317,13 @@ export class InfoPanelManager {
     // Clear observations
     const observationsList = document.getElementById('observations-list');
     if (observationsList) {
-      observationsList.innerHTML = '<li style="font-style: italic; color: #6b7280;">Select an entity to view details</li>';
+      observationsList.innerHTML = '<li style="font-style: italic; color: var(--text-muted);">Select an entity to view details</li>';
     }
     
     // Clear connections
     const connectionsList = document.getElementById('connections-list');
     if (connectionsList) {
-      connectionsList.innerHTML = '<div style="font-style: italic; color: #6b7280; padding: 16px; text-align: center;">Select an entity to view connections</div>';
+      connectionsList.innerHTML = '<div style="font-style: italic; color: var(--text-muted); padding: 16px; text-align: center;">Select an entity to view connections</div>';
     }
   }
 
