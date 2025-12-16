@@ -2,7 +2,17 @@
 
 ## Overview
 
-The frontend is a **read-only** web-based interactive knowledge graph visualization built with vanilla JavaScript and D3.js. This document outlines the modular architecture for better maintainability and user experience.
+The frontend is a **read-only** web-based interactive knowledge graph visualization built with **TypeScript** and D3.js. This document outlines the modular architecture for better maintainability and user experience.
+
+### Type System
+
+Type definitions are centralized in `frontend/web_viewer/src/types/`:
+- `graph.ts` - Entity, Relation, GraphData from MCP server
+- `d3-graph.ts` - GraphNode, GraphLink with D3 SimulationNodeDatum extensions
+- `events.ts` - Type-safe EventMap for pub/sub (15+ event types)
+- `state.ts` - AppState interface with nested data structures
+- `renderer.ts` - Graph visualization configuration
+- `global.d.ts` - Window and d3 global type declarations
 
 ### Read-Only Architecture
 
@@ -47,25 +57,33 @@ The frontend is a **read-only** web-based interactive knowledge graph visualizat
 ```
 frontend/web_viewer/
 ├── index.html                 # Main HTML structure
-├── main.js                   # App coordinator (50-75 lines)
+├── main.ts                    # App coordinator (50-75 lines)
+├── src/types/                 # TypeScript type definitions
+│   ├── index.ts               # Re-exports all types
+│   ├── graph.ts               # Entity, Relation, GraphData
+│   ├── d3-graph.ts            # GraphNode, GraphLink
+│   ├── events.ts              # EventMap for event bus
+│   ├── state.ts               # AppState
+│   ├── renderer.ts            # RendererOptions
+│   └── global.d.ts            # Global d3 declaration
 ├── modules/
 │   ├── core/
-│   │   ├── state-manager.js   # Central state management
-│   │   ├── data-manager.js    # Data loading & filtering
-│   │   ├── event-bus.js       # Event coordination
-│   │   └── app-controller.js  # Main app coordination
+│   │   ├── state-manager.ts   # Central state management
+│   │   ├── data-manager.ts    # Data loading & filtering
+│   │   ├── event-bus.ts       # Type-safe event coordination
+│   │   └── app-controller.ts  # Main app coordination
 │   ├── graph/
-│   │   ├── graph-controller.js # Graph state & coordination
-│   │   ├── graph-renderer.js  # D3.js rendering logic
-│   │   └── graph-interactions.js # Mouse/touch interactions
+│   │   ├── graph-controller.ts # Graph state & coordination
+│   │   ├── graph-renderer.ts  # D3.js rendering logic
+│   │   └── graph-interactions.ts # Mouse/touch interactions
 │   ├── features/
-│   │   ├── search-manager.js  # Search functionality
-│   │   ├── filter-manager.js  # Entity type filtering
-│   │   ├── info-panel.js     # Entity details panel
-│   │   └── legend.js         # Legend rendering
+│   │   ├── search-manager.ts  # Search functionality
+│   │   ├── filter-manager.ts  # Entity type filtering
+│   │   ├── info-panel.ts     # Entity details panel
+│   │   └── legend.ts         # Legend rendering
 │   └── services/
-│       ├── mcp-client.js     # MCP server communication
-│       └── color-service.js  # Color management
+│       ├── mcp-client.ts     # MCP server communication
+│       └── color-service.ts  # Color management
 ├── styles/
 │   ├── base.css              # Reset, variables, base styles
 │   ├── components.css        # Reusable component styles
@@ -90,7 +108,7 @@ The graph center is determined dynamically using a flexible observation-based sy
    - Can be changed dynamically without code modifications
 
 3. **Implementation**:
-   ```javascript
+   ```typescript
    // In DataManager
    findRootEntity(entities) {
      // Search for entity with rootEntity observation
@@ -112,7 +130,7 @@ The graph center is determined dynamically using a flexible observation-based sy
 ## State Management Architecture
 
 ### Central State Structure
-```javascript
+```typescript
 {
   // Data State - Complete dataset from MCP server
   rawData: { 
@@ -176,7 +194,7 @@ Graph Renderer (D3.js updates with filtered dataset)
 ### Core Modules
 
 #### `state-manager.js`
-```javascript
+```typescript
 class StateManager {
   // Centralized state management
   // setState(), getState(), subscribe()
@@ -186,7 +204,7 @@ class StateManager {
 ```
 
 #### `data-manager.js`
-```javascript
+```typescript
 class DataManager {
   // Complete data loading from MCP server
   // loadCompleteGraph() -> calls MCP read-graph
@@ -199,7 +217,7 @@ class DataManager {
 ```
 
 #### `app-controller.js`
-```javascript
+```typescript
 class AppController {
   // Coordinates between all managers
   // Handles high-level user actions
@@ -211,7 +229,7 @@ class AppController {
 
 ### Event Bus Implementation
 
-```javascript
+```typescript
 // event-bus.js - Simple event communication
 class EventBus {
   constructor() {
@@ -249,7 +267,7 @@ class EventBus {
 ### Feature Modules
 
 #### `search-manager.js`
-```javascript
+```typescript
 class SearchManager {
   // Live search query processing (as user types)
   // Finding matching entities in current filtered dataset
@@ -260,7 +278,7 @@ class SearchManager {
 ```
 
 #### `filter-manager.js`
-```javascript
+```typescript
 class FilterManager {
   // Entity type and relation type selection state
   // Dual filter UI rendering and interaction (separate dropdowns)
@@ -270,7 +288,7 @@ class FilterManager {
 ```
 
 #### `graph-controller.js`
-```javascript
+```typescript
 class GraphController {
   // Graph rendering coordination
   // Node/link interaction handling
@@ -465,7 +483,7 @@ This refactoring can be done incrementally:
 
 ### Event Schema Definitions
 
-```javascript
+```typescript
 // Core Events
 'data-loaded': { rawData: {...}, types: {...}, rootEntity: {...} }
 'filtered-data': { filteredData: {...} }
@@ -484,8 +502,8 @@ This refactoring can be done incrementally:
 
 ### MCP Client Interface
 
-```javascript
-// services/mcp-client.js
+```typescript
+// services/mcp-client.ts
 class MCPClient {
   constructor(baseURL = 'http://localhost:3001') {
     this.baseURL = baseURL;
@@ -505,7 +523,7 @@ class MCPClient {
 
 ### Data Filtering Implementation
 
-```javascript
+```typescript
 // In DataManager
 applyFilters(rawData, selectedEntityTypes, selectedRelationTypes) {
   const filteredEntities = rawData.entities.filter(entity => 
@@ -525,7 +543,7 @@ applyFilters(rawData, selectedEntityTypes, selectedRelationTypes) {
 
 ### Search Implementation
 
-```javascript
+```typescript
 // In SearchManager
 searchEntities(query, entities) {
   if (!query.trim()) return entities;
@@ -547,29 +565,29 @@ searchEntities(query, entities) {
 
 1. **Core Infrastructure** (Week 1):
    ```
-   modules/core/event-bus.js          # Event system foundation
-   modules/core/state-manager.js      # State management
-   modules/services/mcp-client.js     # API communication
-   modules/core/data-manager.js       # Data loading & filtering
+   modules/core/event-bus.ts          # Event system foundation
+   modules/core/state-manager.ts      # State management
+   modules/services/mcp-client.ts     # API communication
+   modules/core/data-manager.ts       # Data loading & filtering
    ```
 
 2. **Basic UI** (Week 1-2):
    ```
    modules/features/filter-manager.js # Filter controls
    modules/features/search-manager.js # Search functionality
-   modules/core/app-controller.js     # Coordination
+   modules/core/app-controller.ts     # Coordination
    ```
 
 3. **Graph Rendering** (Week 2-3):
    ```
-   modules/graph/graph-controller.js  # Graph coordination
-   modules/graph/graph-renderer.js    # D3.js rendering
+   modules/graph/graph-controller.ts  # Graph coordination
+   modules/graph/graph-renderer.ts    # D3.js rendering
    modules/graph/graph-interactions.js # User interactions
    ```
 
 4. **Polish & Features** (Week 3-4):
    ```
-   modules/features/info-panel.js     # Entity details
-   modules/features/legend.js         # Type legend
-   modules/services/color-service.js  # Color management
+   modules/features/info-panel.ts     # Entity details
+   modules/features/legend.ts         # Type legend
+   modules/services/color-service.ts  # Color management
    ```
