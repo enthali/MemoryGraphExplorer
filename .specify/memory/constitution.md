@@ -73,7 +73,17 @@ Memory Graph Explorer is a knowledge graph visualization system that enables Git
 1. Create branch from `main`
 2. Use Spec Kit: `/speckit.specify` → `/speckit.plan` → `/speckit.tasks`
 3. Implement and test
-4. Create PR
+4. **Update documentation** (see Documentation Rule below)
+5. Create PR
+
+### Documentation Rule (NON-NEGOTIABLE)
+Every PR that changes functionality MUST include documentation updates:
+- **Architecture changes** → Update `docs/design/` and `.github/copilot-instructions.md`
+- **New features** → Add to relevant `docs/` files
+- **API changes** → Update API documentation
+- **Config changes** → Update README or copilot-instructions
+
+PRs without required docs updates will be rejected.
 
 ### Quick Iterations
 1. Start local services (not Docker for fast feedback)
