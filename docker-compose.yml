@@ -12,9 +12,8 @@ services:
     ports:
       - "8080:8080"  # Production: Web UI on host port 8080 (MCP internal on 3000)
     volumes:
-      # Mount production memory.json file from Journal directory
-      # NOTE: Using Windows host path for Docker Desktop compatibility
-      - C:/workspace/Journal/memory.json:/app/data/memory.json
+      # Mount production memory.json file from Journal directory (WSL2 path format)
+      - /mnt/c/workspace/Journal/memory.json:/app/data/memory.json
     environment:
       - NODE_ENV=production
       - FLASK_ENV=production
