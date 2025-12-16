@@ -14,6 +14,7 @@ import { filterManager } from './modules/features/filter-manager.js';
 import { searchManager } from './modules/features/search-manager.js';
 import { infoPanelManager } from './modules/features/info-panel.js';
 import { legendManager } from './modules/features/legend.js';
+import { themeManager } from './modules/features/theme-manager.js';
 
 // Graph modules
 import { graphController } from './modules/graph/graph-controller.js';
@@ -42,6 +43,9 @@ class MemoryGraphExplorer {
   async init() {
     try {
       console.log('📋 Initializing modular components...');
+      
+      // Initialize theme manager early to apply saved theme
+      themeManager.initialize();
       
       // Initialize graph renderer
       this.initializeGraphRenderer();
@@ -108,7 +112,8 @@ class MemoryGraphExplorer {
       'entity-selected',
       'entity-centered',
       'graph-centered',
-      'color-map-updated'
+      'color-map-updated',
+      'theme-changed'
     ];
 
     keyEvents.forEach(eventName => {
@@ -182,7 +187,8 @@ class MemoryGraphExplorer {
       searchStatus: searchManager.getSearchStats(),
       infoPanelStatus: infoPanelManager.getPanelState(),
       legendStatus: legendManager.getStats(),
-      interactionStatus: graphInteractions.getStats()
+      interactionStatus: graphInteractions.getStats(),
+      themeStatus: themeManager.getStats()
     };
   }
 
@@ -202,6 +208,7 @@ class MemoryGraphExplorer {
       searchManager,
       infoPanelManager,
       legendManager,
+      themeManager,
       
       // Graph
       graphController,
@@ -231,7 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
       dataManager,
       appController,
       graphController,
-      colorService
+      colorService,
+      themeManager
     };
   }
   
